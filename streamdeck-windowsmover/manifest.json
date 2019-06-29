@@ -1,0 +1,38 @@
+{
+  "Actions": [
+    {
+      "Icon": "Images/windowIcon",
+      "Name": "Windows Mover",
+      "States": [
+        {
+          "Image": "Images/window",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Move and resize an application window",
+      "UUID": "com.barraider.windowsmover",
+      "PropertyInspectorPath": "PropertyInspector/WindowsMover/WindowsMover.html"
+    }
+  ],
+  "Author": "BarRaider",
+  "Description": "Allows you to control the position and size of application windows on your Windows PC. Change height, width and postion. Supports moving applications across multiple screens.",
+  "Name": "Windows Mover & Resizer",
+  "Icon": "Images/pluginIcon",
+  "URL": "https://barraider.github.io/",
+  "Version": "1.0",
+  "CodePath": "com.barraider.windowsmover",
+  "Category": "BarRaider",
+  "CategoryIcon": "Images/categoryIcon",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "4.3"
+  }
+}

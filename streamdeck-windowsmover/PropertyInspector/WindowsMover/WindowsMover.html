@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
+    <meta name=apple-mobile-web-app-capable content=yes>
+    <meta name=apple-mobile-web-app-status-bar-style content=black>
+    <title>BarRaider's Window Mover and Resizer</title>
+    <link rel="stylesheet" href="../sdpi.css">
+    <script src="../sdtools.common.js"></script>
+    <script src="../WindowsMover.js"></script>
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <details class="message">
+            <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.github.io</span></summary>
+        </details>
+        <div class="sdpi-item" id="dvApplications">
+            <div class="sdpi-item-label">Application</div>
+            <select class="sdpi-item-value select sdProperty sdList" id="applications" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="applicationName"></select>
+        </div>
+
+        <div class="sdpi-item" id="dvScreens">
+            <div class="sdpi-item-label">Screen</div>
+            <select class="sdpi-item-value select sdProperty sdList" id="screens" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="device" sdValueField="screen"></select>
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">X Position</div>
+            <input class="sdpi-item-value sdProperty" placeholder="200" value="" id="xPosition" pattern="^[0-9]*$" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Y Position</div>
+            <input class="sdpi-item-value sdProperty" placeholder="0" value="" id="yPosition" pattern="^[0-9]*$" oninput="setSettings()">
+        </div>
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Resize Window</div>
+            <div class="sdpi-item-value">
+                <input id="resizeWindow" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="resizeWindow" class="sdpi-item-label"><span></span>&nbsp;</label>
+            </div>
+        </div>
+        <div class="sdpi-item leftMargin10">
+            <div class="sdpi-item-label">Height</div>
+            <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="height" pattern="^[0-9]*$" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item leftMargin10">
+            <div class="sdpi-item-label">Width</div>
+            <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="width" pattern="^[0-9]*$" oninput="setSettings()">
+        </div>
+    </div>
+</body>
+</html>
