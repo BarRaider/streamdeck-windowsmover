@@ -32,18 +32,39 @@
             <div class="sdpi-item-label">Y Position</div>
             <input class="sdpi-item-value sdProperty" placeholder="0" value="" id="yPosition" pattern="^[0-9]*$" oninput="setSettings()">
         </div>
-        <div type="checkbox" class="sdpi-item">
+        <div type="radio" class="sdpi-item" id="rdWindowResize">
             <div class="sdpi-item-label">Resize Window</div>
-            <div class="sdpi-item-value">
-                <input id="resizeWindow" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
-                <label for="resizeWindow" class="sdpi-item-label"><span></span>&nbsp;</label>
+            <div class="sdpi-item-value ">
+                <div class="sdpi-item-child">
+                    <input id="noResize" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" checked oninput="setSettings()">
+                    <label for="noResize" class="sdpi-item-label"><span></span>No Resize</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="maximizeWindow" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
+                    <label for="maximizeWindow" class="sdpi-item-label"><span></span>Maximize</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="minimizeWindow" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
+                    <label for="minimizeWindow" class="sdpi-item-label"><span></span>Minimize</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="resizeWindow" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
+                    <label for="resizeWindow" class="sdpi-item-label"><span></span>Resize</label>
+                </div>
             </div>
         </div>
-        <div class="sdpi-item leftMargin10">
+        <div type="checkbox" class="sdpi-item" style="display:none;">
+            <div class="sdpi-item-label">Resize Window</div>
+            <div class="sdpi-item-value">
+                <input id="resizeWindow1" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="resizeWindow1" class="sdpi-item-label"><span></span>&nbsp;</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvHeight">
             <div class="sdpi-item-label">Height</div>
             <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="height" pattern="^[0-9]*$" oninput="setSettings()">
         </div>
-        <div class="sdpi-item leftMargin10">
+        <div class="sdpi-item" id="dvWidth">
             <div class="sdpi-item-label">Width</div>
             <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="width" pattern="^[0-9]*$" oninput="setSettings()">
         </div>

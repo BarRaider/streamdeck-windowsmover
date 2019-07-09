@@ -22,11 +22,14 @@ namespace BarRaider.WindowsMover
                 PluginSettings instance = new PluginSettings();
                 instance.ApplicationName = String.Empty;
                 instance.Screen = String.Empty;
-                instance.Height = String.Empty;
-                instance.Width = String.Empty;
-                instance.XPosition = String.Empty;
-                instance.YPosition = String.Empty;
+                instance.Height = "900";
+                instance.Width = "1500";
+                instance.XPosition = "0";
+                instance.YPosition = "0";
+                instance.NoResizeWindow = true;
                 instance.ResizeWindow = false;
+                instance.MaximizeWindow = false;
+                instance.MinimizeWindow = false;
 
                 return instance;
             }
@@ -36,6 +39,15 @@ namespace BarRaider.WindowsMover
 
             [JsonProperty(PropertyName = "screen")]
             public string Screen { get; set; }
+
+            [JsonProperty(PropertyName = "noResize")]
+            public bool NoResizeWindow { get; set; }
+
+            [JsonProperty(PropertyName = "maximizeWindow")]
+            public bool MaximizeWindow { get; set; }
+
+            [JsonProperty(PropertyName = "minimizeWindow")]
+            public bool MinimizeWindow { get; set; }
 
             [JsonProperty(PropertyName = "resizeWindow")]
             public bool ResizeWindow { get; set; }
@@ -126,11 +138,19 @@ namespace BarRaider.WindowsMover
         private void PopulateApplications()
         {
             settings.Applications = System.Diagnostics.Process.GetProcesses().Select(p => new ProcessInfo(p.ProcessName)).GroupBy(p=>p.Name).Select(p=>p.First()).OrderBy(p => p.Name).ToList();
+            if (string.IsNullOrEmpty(settings.ApplicationName) && settings.Applications.Count > 0)
+            {
+                settings.ApplicationName = settings.Applications[0].Name;
+            }
         }
 
         private void PopulateScreens()
         {
             settings.Screens = Screen.AllScreens.Select(s => new ScreenInfo(s.DeviceName, s.DeviceFriendlyName())).ToList();
+            if (string.IsNullOrWhiteSpace(settings.Screen) && settings.Screens.Count > 0)
+            {
+                settings.Screen = settings.Screens[0].DeviceName;
+            }
         }
 
         private async Task MoveApplication()
@@ -176,8 +196,10 @@ namespace BarRaider.WindowsMover
             }
 
             WindowSize windowSize = null;
+            WindowResize windowResize = WindowResize.NoResize;
             if (settings.ResizeWindow)
             {
+                windowResize = WindowResize.ResizeWindow;
 
                 if (String.IsNullOrWhiteSpace(settings.Height) || String.IsNullOrWhiteSpace(settings.Width))
                 {
@@ -202,6 +224,14 @@ namespace BarRaider.WindowsMover
 
                 windowSize = new WindowSize(height, width);
             }
+            else if (settings.MaximizeWindow)
+            {
+                windowResize = WindowResize.Maximize;
+            }
+            else if (settings.MinimizeWindow)
+            {
+                windowResize = WindowResize.Minimize;
+            }
 
             var screen = Screen.AllScreens.Where(s => s.DeviceName == settings.Screen).FirstOrDefault();
             if (screen == null)
@@ -211,7 +241,7 @@ namespace BarRaider.WindowsMover
                 return;
             }
 
-            WindowPosition.MoveProcess(settings.ApplicationName, screen, new System.Drawing.Point(xPosition, yPosition), windowSize);
+            WindowPosition.MoveProcess(settings.ApplicationName, screen, new System.Drawing.Point(xPosition, yPosition), windowResize, windowSize);
         }
 
         #endregion

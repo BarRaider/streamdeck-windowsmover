@@ -1,14 +1,40 @@
-﻿using BarRaider.WindowsMover.Wrappers;
+﻿using BarRaider.SdTools;
+using BarRaider.WindowsMover.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BarRaider.WindowsMover
 {
+    public enum WindowResize
+    {
+        NoResize = 0,
+        Maximize = 1,
+        Minimize = 2,
+        ResizeWindow = 3
+    }
+
+    public enum ShowWindowEnum : int
+    {
+        HIDE = 0,
+        SHOWNORMAL = 1,
+        SHOWMINIMIZED = 2,
+        SHOWMAXIMIZED = 3,
+        SHOWNOACTIVATE = 4,
+        SHOW = 5,
+        MINIMIZE = 6,
+        SHOWMINNOACTIVE = 7,
+        SHOWNA = 8,
+        RESTORE = 9,
+        SHOWDEFAULT = 10
+    }
+
+
     [Flags]
     public enum SetWindowPosFlags : uint
     {
@@ -94,15 +120,26 @@ namespace BarRaider.WindowsMover
 
     public static class WindowPosition
     {
-        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true)]
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
 
-        public static void MoveProcess(string processName, Screen destinationScreen, Point position, WindowSize windowSize)
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        // The ShowWindowAsync method alters the windows show state through the nCmdShow parameter.
+        // The nCmdShow parameter can have any of the SW values.
+        // See http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/windows/windowreference/windowfunctions/showwindowasync.asp
+        // for full documentation.
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum nCmdShow);
+
+        public static void MoveProcess(string processName, Screen destinationScreen, Point position, WindowResize windowResize, WindowSize windowSize)
         {
             SetWindowPosFlags flags = SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_SHOWWINDOW;
             int height = 0;
             int width = 0;
-            if (windowSize == null)
+            bool canResize = false;
+            if (windowResize != WindowResize.ResizeWindow || windowSize == null)
             {
                 flags |= SetWindowPosFlags.SWP_NOSIZE;
             }
@@ -110,16 +147,40 @@ namespace BarRaider.WindowsMover
             {
                 height = windowSize.Height;
                 width = windowSize.Width;
+                canResize = true;
             }
+
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for {processName} - Resize: {windowResize}");
             foreach (var process in System.Diagnostics.Process.GetProcessesByName(processName))
             {
-                IntPtr h1 = process.MainWindowHandle;
-                
-                
-                SetWindowPos(h1, (IntPtr)0, destinationScreen.WorkingArea.X + position.X, destinationScreen.WorkingArea.Y + position.Y, width, height , flags);
+                try
+                {
+                    IntPtr h1 = process.MainWindowHandle;
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Found {processName} with handle {h1}");
+                    // Needed to support multi-maximize clicks
+                    if (windowResize != WindowResize.Minimize)
+                    {
+                        ShowWindow(h1, ShowWindowEnum.SHOWNORMAL);
+                    }
+
+                    SetWindowPos(h1, (IntPtr)0, destinationScreen.WorkingArea.X + position.X, destinationScreen.WorkingArea.Y + position.Y, width, height, flags);
+                    if (windowResize == WindowResize.Maximize)
+                    {
+                        // Minimize the window.
+                        ShowWindow(h1, ShowWindowEnum.SHOWMAXIMIZED);
+                    }
+                    else if (windowResize == WindowResize.Minimize)
+                    {
+                        // Minimize the window.
+                        ShowWindow(h1, ShowWindowEnum.MINIMIZE);
+                    }
+                    SetForegroundWindow(h1);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error setting window for process {processName} {ex}");
+                }
             }
-
-
         }
             
 
