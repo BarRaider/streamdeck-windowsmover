@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E48E7B20-6E4D-4D16-B7CB-264D7A0257B0}</ProjectGuid>
+    <ProjectGuid>{CC12FB78-BDB5-44A2-9694-3E604BDCAFE0}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>BarRaider.WindowsMover</RootNamespace>
     <AssemblyName>com.barraider.windowsmover</AssemblyName>

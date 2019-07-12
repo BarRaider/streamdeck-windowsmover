@@ -146,7 +146,21 @@ namespace BarRaider.WindowsMover
 
         private void PopulateScreens()
         {
-            settings.Screens = Screen.AllScreens.Select(s => new ScreenInfo(s.DeviceName, s.DeviceFriendlyName())).ToList();
+            settings.Screens = Screen.AllScreens.Select(s =>
+            {
+                string friendlyName = s.DeviceName;
+                try
+                {
+                    string friendlyNameStr = s.DeviceFriendlyName();
+                    if (!String.IsNullOrEmpty(friendlyNameStr))
+                    {
+                        friendlyName = friendlyNameStr;
+                    }
+                }
+                catch { }
+                return new ScreenInfo(s.DeviceName, friendlyName);
+               }).ToList();
+
             if (string.IsNullOrWhiteSpace(settings.Screen) && settings.Screens.Count > 0)
             {
                 settings.Screen = settings.Screens[0].DeviceName;

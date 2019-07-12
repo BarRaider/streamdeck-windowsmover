@@ -1,6 +1,6 @@
 # Windows Mover & Resizer for Elgato Stream Deck
 
-Allows you to control the position and size of application windows on your Windows PC. Change height, width and position. Supports moving applications across multiple screens.
+Allows you to control the position and size of application windows on your Windows PC. Maximize/Minimize windows or change height, width and position. Supports moving applications across multiple screens.
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
