@@ -120,6 +120,15 @@ namespace BarRaider.WindowsMover
 
     public static class WindowPosition
     {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
 
@@ -133,12 +142,16 @@ namespace BarRaider.WindowsMover
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum nCmdShow);
 
+        // Get window's rect
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
+
         public static void MoveProcess(string processName, Screen destinationScreen, Point position, WindowResize windowResize, WindowSize windowSize)
         {
             SetWindowPosFlags flags = SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_SHOWWINDOW;
             int height = 0;
             int width = 0;
-            bool canResize = false;
             if (windowResize != WindowResize.ResizeWindow || windowSize == null)
             {
                 flags |= SetWindowPosFlags.SWP_NOSIZE;
@@ -147,7 +160,6 @@ namespace BarRaider.WindowsMover
             {
                 height = windowSize.Height;
                 width = windowSize.Width;
-                canResize = true;
             }
 
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for {processName} - Resize: {windowResize}");
@@ -182,7 +194,35 @@ namespace BarRaider.WindowsMover
                 }
             }
         }
-            
 
+        public static Rectangle GetWindowPostion(string processName)
+        {
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"GetWindowPostion for {processName}");
+            foreach (var process in System.Diagnostics.Process.GetProcessesByName(processName))
+            {
+                try
+                {
+                    IntPtr h1 = process.MainWindowHandle;
+                    if (h1.ToInt32() == 0)
+                    {
+                        continue;
+                    }
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Found {processName} with handle {h1}");
+
+                    RECT rct = new RECT();
+                    GetWindowRect(h1, ref rct);
+
+                    if (rct.Bottom > rct.Top)
+                    {
+                        return new Rectangle(rct.Left, rct.Top, rct.Right - rct.Left, rct.Bottom - rct.Top);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"GetWindowPostion error {processName} {ex}");
+                }
+            }
+            return Rectangle.Empty;
+        }
     }
 }

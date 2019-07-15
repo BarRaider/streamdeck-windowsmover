@@ -307,10 +307,10 @@ namespace BarRaider.WindowsMover
         {
             try
             {
-                var allFriendlyNames = GetAllMonitorsFriendlyNames();
+                var allFriendlyNames = GetAllMonitorsFriendlyNames().ToArray();
                 for (var index = 0; index < Screen.AllScreens.Length; index++)
                     if (Equals(screen, Screen.AllScreens[index]))
-                        return allFriendlyNames.ToArray()[index];
+                        return allFriendlyNames[index];
             }
             catch(Exception ex)
             {

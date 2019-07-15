@@ -19,17 +19,20 @@ namespace BarRaider.WindowsMover
         {
             public static PluginSettings CreateDefaultSettings()
             {
-                PluginSettings instance = new PluginSettings();
-                instance.ApplicationName = String.Empty;
-                instance.Screen = String.Empty;
-                instance.Height = "900";
-                instance.Width = "1500";
-                instance.XPosition = "0";
-                instance.YPosition = "0";
-                instance.NoResizeWindow = true;
-                instance.ResizeWindow = false;
-                instance.MaximizeWindow = false;
-                instance.MinimizeWindow = false;
+                PluginSettings instance = new PluginSettings
+                {
+                    ApplicationName = String.Empty,
+                    Screen = String.Empty,
+                    Height = "900",
+                    Width = "1500",
+                    XPosition = "0",
+                    YPosition = "0",
+                    NoResizeWindow = true,
+                    ResizeWindow = false,
+                    MaximizeWindow = false,
+                    MinimizeWindow = false,
+                    ScreenFriendlyName = true
+                };
 
                 return instance;
             }
@@ -64,6 +67,9 @@ namespace BarRaider.WindowsMover
             [JsonProperty(PropertyName = "yPosition")]
             public string YPosition { get; set; }
 
+            [JsonProperty(PropertyName = "screenFriendlyName")]
+            public bool ScreenFriendlyName { get; set; }
+
             [JsonProperty(PropertyName = "applications")]
             public List<ProcessInfo> Applications { get; set; }
 
@@ -75,7 +81,7 @@ namespace BarRaider.WindowsMover
 
         #region Private Members
 
-        private PluginSettings settings;
+        private readonly PluginSettings settings;
 
         #endregion
         public WindowsMoverAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -88,6 +94,8 @@ namespace BarRaider.WindowsMover
             {
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
+            connection.StreamDeckConnection.OnSendToPlugin += StreamDeckConnection_OnSendToPlugin;
+
             PopulateApplications();
             PopulateScreens();
             SaveSettings();
@@ -95,6 +103,7 @@ namespace BarRaider.WindowsMover
 
         public override void Dispose()
         {
+            Connection.StreamDeckConnection.OnSendToPlugin -= StreamDeckConnection_OnSendToPlugin;
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
         }
 
@@ -116,12 +125,17 @@ namespace BarRaider.WindowsMover
             else
             {
                 await Connection.SetTitleAsync(null);
-            }      
+            }
         }
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
         {
+            bool screenFriendlyName = settings.ScreenFriendlyName;
             Tools.AutoPopulateSettings(settings, payload.Settings);
+            if (screenFriendlyName != settings.ScreenFriendlyName)
+            {
+                PopulateScreens();
+            }
             SaveSettings();
         }
 
@@ -137,11 +151,12 @@ namespace BarRaider.WindowsMover
 
         private void PopulateApplications()
         {
-            settings.Applications = System.Diagnostics.Process.GetProcesses().Select(p => new ProcessInfo(p.ProcessName)).GroupBy(p=>p.Name).Select(p=>p.First()).OrderBy(p => p.Name).ToList();
+            settings.Applications = System.Diagnostics.Process.GetProcesses().Select(p => new ProcessInfo(p.ProcessName)).GroupBy(p => p.Name).Select(p => p.First()).OrderBy(p => p.Name).ToList();
             if (string.IsNullOrEmpty(settings.ApplicationName) && settings.Applications.Count > 0)
             {
                 settings.ApplicationName = settings.Applications[0].Name;
             }
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {settings.Applications.Count} applications");
         }
 
         private void PopulateScreens()
@@ -149,22 +164,26 @@ namespace BarRaider.WindowsMover
             settings.Screens = Screen.AllScreens.Select(s =>
             {
                 string friendlyName = s.DeviceName;
-                try
+                if (settings.ScreenFriendlyName)
                 {
-                    string friendlyNameStr = s.DeviceFriendlyName();
-                    if (!String.IsNullOrEmpty(friendlyNameStr))
+                    try
                     {
-                        friendlyName = friendlyNameStr;
+                        string friendlyNameStr = s.DeviceFriendlyName();
+                        if (!String.IsNullOrEmpty(friendlyNameStr))
+                        {
+                            friendlyName = friendlyNameStr;
+                        }
                     }
+                    catch { }
                 }
-                catch { }
                 return new ScreenInfo(s.DeviceName, friendlyName);
-               }).ToList();
+            }).ToList();
 
             if (string.IsNullOrWhiteSpace(settings.Screen) && settings.Screens.Count > 0)
             {
                 settings.Screen = settings.Screens[0].DeviceName;
             }
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {settings.Screens.Count} screens");
         }
 
         private async Task MoveApplication()
@@ -190,19 +209,15 @@ namespace BarRaider.WindowsMover
                 return;
             }
 
-            int xPosition;
-            int yPosition;
-            int height;
-            int width;
 
-            if (!int.TryParse(settings.XPosition, out xPosition))
+            if (!int.TryParse(settings.XPosition, out int xPosition))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid X position: {settings.XPosition}");
                 await Connection.ShowAlert();
                 return;
             }
 
-            if (!int.TryParse(settings.YPosition, out yPosition))
+            if (!int.TryParse(settings.YPosition, out int yPosition))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid Y position: {settings.YPosition}");
                 await Connection.ShowAlert();
@@ -222,14 +237,14 @@ namespace BarRaider.WindowsMover
                     return;
                 }
 
-                if (!int.TryParse(settings.Height, out height))
+                if (!int.TryParse(settings.Height, out int height))
                 {
                     Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid height: {settings.Height}");
                     await Connection.ShowAlert();
                     return;
                 }
 
-                if (!int.TryParse(settings.Width, out width))
+                if (!int.TryParse(settings.Width, out int width))
                 {
                     Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid width: {settings.Width}");
                     await Connection.ShowAlert();
@@ -256,6 +271,49 @@ namespace BarRaider.WindowsMover
             }
 
             WindowPosition.MoveProcess(settings.ApplicationName, screen, new System.Drawing.Point(xPosition, yPosition), windowResize, windowSize);
+        }
+
+        private async Task FetchWindowLocation()
+        {
+            if (string.IsNullOrEmpty(settings.ApplicationName))
+            {
+                Logger.Instance.LogMessage(TracingLevel.WARN, $"FetchWindowLocation called with no application selected");
+                await Connection.ShowAlert();
+                return;
+            }
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"FetchWindowLocation called");
+            var rect = WindowPosition.GetWindowPostion(settings.ApplicationName);
+            if (!rect.IsEmpty)
+            {
+                settings.XPosition = rect.Left.ToString();
+                settings.YPosition = rect.Top.ToString();
+                settings.Height = rect.Bottom.ToString();
+                settings.Width = rect.Width.ToString();
+
+                // Reset to first screen
+                settings.Screen = null;
+                PopulateScreens();
+                await SaveSettings();
+            }
+        }
+
+        private async void StreamDeckConnection_OnSendToPlugin(object sender, streamdeck_client_csharp.StreamDeckEventReceivedEventArgs<streamdeck_client_csharp.Events.SendToPluginEvent> e)
+        {
+            var payload = e.Event.Payload;
+            if (Connection.ContextId != e.Event.Context)
+            {
+                return;
+            }
+
+            if (payload["property_inspector"] != null)
+            {
+                switch (payload["property_inspector"].ToString().ToLower())
+                {
+                    case "getwindowdetails":
+                        await FetchWindowLocation();
+                        break;
+                }
+            }
         }
 
         #endregion

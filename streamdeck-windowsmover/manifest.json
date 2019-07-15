@@ -17,11 +17,11 @@
     }
   ],
   "Author": "BarRaider",
-  "Description": "Allows you to control the position and size of application windows on your Windows PC. Change height, width and postion. Supports moving applications across multiple screens.",
+  "Description": "llows you to control the position and size of application windows on your Windows PC. Maximize/Minimize windows or change height, width and position. Supports moving applications across multiple screens.",
   "Name": "Windows Mover & Resizer",
   "Icon": "Images/pluginIcon",
   "URL": "https://barraider.github.io/",
-  "Version": "1.2",
+  "Version": "1.5",
   "CodePath": "com.barraider.windowsmover",
   "Category": "BarRaider",
   "CategoryIcon": "Images/categoryIcon",

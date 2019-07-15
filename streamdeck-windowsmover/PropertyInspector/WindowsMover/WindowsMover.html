@@ -19,10 +19,23 @@
             <div class="sdpi-item-label">Application</div>
             <select class="sdpi-item-value select sdProperty sdList" id="applications" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="applicationName"></select>
         </div>
-
+        <details class="message">
+            <summary>Note: Only applications that are currently running are shown in the list above.</summary>
+        </details>
         <div class="sdpi-item" id="dvScreens">
             <div class="sdpi-item-label">Screen</div>
             <select class="sdpi-item-value select sdProperty sdList" id="screens" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="device" sdValueField="screen"></select>
+        </div>
+        <div type="checkbox" class="sdpi-item" id="dvScreenFriendlyName">
+            <div class="sdpi-item-label">Screen Names</div>
+            <div class="sdpi-item-value">
+                <input id="screenFriendlyName" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
+                <label for="screenFriendlyName" class="sdpi-item-label"><span></span>Show screens friendly name</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvReset">
+            <div class="sdpi-item-label">Coordinates</div>
+            <button class="sdpi-item-value" onclick="getWindowDetails()">Get current window coordinates</button>
         </div>
         <div class="sdpi-item">
             <div class="sdpi-item-label">X Position</div>

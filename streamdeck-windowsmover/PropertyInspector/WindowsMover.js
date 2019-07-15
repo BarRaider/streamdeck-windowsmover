@@ -33,3 +33,9 @@ function setHeightWidthWrapper(displayValue) {
     dvHeight.style.display = displayValue;
     dvWidth.style.display = displayValue;
 }
+
+function getWindowDetails() {
+    var payload = {};
+    payload.property_inspector = 'getWindowDetails';
+    sendPayloadToPlugin(payload);
+}
