@@ -285,9 +285,10 @@ namespace BarRaider.WindowsMover
             var rect = WindowPosition.GetWindowPostion(settings.ApplicationName);
             if (!rect.IsEmpty)
             {
+                Logger.Instance.LogMessage(TracingLevel.DEBUG, $"Rect is X: {rect.Top} Height: {rect.Bottom} Y: {rect.Left} Width: {rect.Right}");
                 settings.XPosition = rect.Left.ToString();
                 settings.YPosition = rect.Top.ToString();
-                settings.Height = rect.Bottom.ToString();
+                settings.Height = rect.Height.ToString();
                 settings.Width = rect.Width.ToString();
 
                 // Reset to first screen

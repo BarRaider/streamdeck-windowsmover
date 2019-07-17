@@ -211,7 +211,7 @@ namespace BarRaider.WindowsMover
 
                     RECT rct = new RECT();
                     GetWindowRect(h1, ref rct);
-
+                    Logger.Instance.LogMessage(TracingLevel.DEBUG, $"Rect is Top: {rct.Top} Bottom: {rct.Bottom} Left: {rct.Left} Right: {rct.Right}");
                     if (rct.Bottom > rct.Top)
                     {
                         return new Rectangle(rct.Left, rct.Top, rct.Right - rct.Left, rct.Bottom - rct.Top);

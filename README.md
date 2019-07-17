@@ -4,6 +4,11 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
+## New in v1.6
+- Plugin will fill coordinates  with where the windows is currently located (and also height/width of window)
+- Supports Minimizing/Maximizing windows
+- Option to remove the screen's "Friendly name" in cases where you have multiple monitors of the same kind.
+
 ## Features
 - Multi-Screen support, move applications across multiple screens
 - Change location and size of application window
