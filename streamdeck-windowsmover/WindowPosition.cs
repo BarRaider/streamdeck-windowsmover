@@ -147,52 +147,95 @@ namespace BarRaider.WindowsMover
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
 
-        public static void MoveProcess(string processName, Screen destinationScreen, Point position, WindowResize windowResize, WindowSize windowSize)
+        public static int MoveProcess(MoveProcessSettings settings)
         {
-            SetWindowPosFlags flags = SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_SHOWWINDOW;
+            if (settings == null)
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, "MoveProcess called with null settings");
+                return 0;
+            }
+
+            // Set Resize
+            SetWindowPosFlags flags = SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_NOZORDER;
             int height = 0;
             int width = 0;
-            if (windowResize != WindowResize.ResizeWindow || windowSize == null)
+            if (settings.WindowResize != WindowResize.ResizeWindow || settings.WindowSize == null)
             {
                 flags |= SetWindowPosFlags.SWP_NOSIZE;
             }
             else
             {
-                height = windowSize.Height;
-                width = windowSize.Width;
+                height = settings.WindowSize.Height;
+                width = settings.WindowSize.Width;
             }
 
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for {processName} - Resize: {windowResize}");
-            foreach (var process in System.Diagnostics.Process.GetProcessesByName(processName))
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for: {settings.ToString()}");
+            int totalProcesses = 0;
+            int movedProcesses = 0;
+            foreach (var process in System.Diagnostics.Process.GetProcessesByName(settings.Name))
             {
                 try
                 {
+                    totalProcesses++;
                     IntPtr h1 = process.MainWindowHandle;
-                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Found {processName} with handle {h1}");
+                    if (h1.ToInt32() == 0)
+                    {
+                        continue;
+                    }
+                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Found {settings.Name} with handle {h1}");
+
+                    if (!String.IsNullOrEmpty(settings.LocationFilter) && !process.MainModule.FileName.ToLowerInvariant().Contains(settings.LocationFilter.ToLowerInvariant()))
+                    {
+                        Logger.Instance.LogMessage(TracingLevel.INFO, $"Skipped {settings.Name} with handle {h1} as the file location was different from \"{settings.LocationFilter}\": {process.MainModule.FileName}");
+                        continue;
+                    }
+
+                    if (!String.IsNullOrEmpty(settings.TitleFilter) && !process.MainWindowTitle.Contains(settings.TitleFilter))
+                    {
+                        Logger.Instance.LogMessage(TracingLevel.INFO, $"Skipped {settings.Name} with handle {h1} as the window title was different from \"{settings.TitleFilter}\": {process.MainWindowTitle}");
+                        continue;
+                    }
+
+                    movedProcesses++;
                     // Needed to support multi-maximize clicks
-                    if (windowResize != WindowResize.Minimize)
+                    if (settings.WindowResize != WindowResize.Minimize)
                     {
                         ShowWindow(h1, ShowWindowEnum.SHOWNORMAL);
                     }
 
-                    SetWindowPos(h1, (IntPtr)0, destinationScreen.WorkingArea.X + position.X, destinationScreen.WorkingArea.Y + position.Y, width, height, flags);
-                    if (windowResize == WindowResize.Maximize)
+                    SetWindowPos(h1, new IntPtr(0), settings.DestinationScreen.WorkingArea.X + settings.Position.X, settings.DestinationScreen.WorkingArea.Y + settings.Position.Y, width, height, flags);
+                    if (settings.WindowResize == WindowResize.Maximize)
                     {
                         // Minimize the window.
                         ShowWindow(h1, ShowWindowEnum.SHOWMAXIMIZED);
                     }
-                    else if (windowResize == WindowResize.Minimize)
+                    else if (settings.WindowResize == WindowResize.Minimize)
                     {
                         // Minimize the window.
                         ShowWindow(h1, ShowWindowEnum.MINIMIZE);
                     }
                     SetForegroundWindow(h1);
+
+                    if (settings.MakeTopmost)
+                    {
+                        try
+                        {
+                            TryForceForegroundWindow(h1);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Instance.LogMessage(TracingLevel.WARN, $"Failed to make topmost {settings.Name} {ex}");
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error setting window for process {processName} {ex}");
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error setting window for process {settings.Name} {ex}");
                 }
             }
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Iterated through {totalProcesses} processes, moved {movedProcesses}");
+
+            return movedProcesses;
         }
 
         public static Rectangle GetWindowPostion(string processName)
@@ -223,6 +266,123 @@ namespace BarRaider.WindowsMover
                 }
             }
             return Rectangle.Empty;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool LockSetForegroundWindow(uint uLockCode);
+
+        [DllImport("user32.dll")]
+        static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("kernel32.dll")]
+        static extern uint GetCurrentThreadId();
+
+        [DllImport("user32.dll")]
+        static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr SetFocus(IntPtr hWnd);
+
+        static readonly uint LSFW_UNLOCK = 2;
+
+        static readonly int ASFW_ANY = -1; // by MSDN
+
+        private static void TryForceForegroundWindow(IntPtr hWnd)
+        {
+            LockSetForegroundWindow(LSFW_UNLOCK);
+            AllowSetForegroundWindow(ASFW_ANY);
+
+            IntPtr hWndForeground = GetForegroundWindow();
+            SendKeys.SendWait("{UP}");
+            if (hWndForeground.ToInt32() != 0)
+            {
+                if (hWndForeground != hWnd)
+                {
+                    uint thread1 = GetWindowThreadProcessId(hWndForeground, out uint dummy);
+                    uint thread2 = GetCurrentThreadId();
+
+
+                    if (thread1 != thread2)
+                    {
+                        AttachThreadInput(thread1, thread2, true);
+                        LockSetForegroundWindow(LSFW_UNLOCK);
+                        AllowSetForegroundWindow(ASFW_ANY);
+                        BringWindowToTop(hWnd);
+                        if (IsIconic(hWnd))
+                        {
+                            ShowWindow(hWnd, ShowWindowEnum.SHOWNORMAL);
+                        }
+                        else
+                        {
+                            ShowWindow(hWnd, ShowWindowEnum.SHOW);
+                        }
+                        SetFocus(hWnd);
+                        AttachThreadInput(thread1, thread2, false);
+                    }
+                    else
+                    {
+                        AttachThreadInput(thread1, thread2, true);
+                        LockSetForegroundWindow(LSFW_UNLOCK);
+                        AllowSetForegroundWindow(ASFW_ANY);
+                        BringWindowToTop(hWnd);
+                        SetForegroundWindow(hWnd);
+                        SetFocus(hWnd);
+                        AttachThreadInput(thread1, thread2, false);
+
+                    }
+                    if (IsIconic(hWnd))
+                    {
+                        AttachThreadInput(thread1, thread2, true);
+                        LockSetForegroundWindow(LSFW_UNLOCK);
+                        AllowSetForegroundWindow(ASFW_ANY);
+                        BringWindowToTop(hWnd);
+                        ShowWindow(hWnd, ShowWindowEnum.SHOWNORMAL);
+                        SetFocus(hWnd);
+                        AttachThreadInput(thread1, thread2, false);
+                    }
+                    else
+                    {
+                        BringWindowToTop(hWnd);
+                        ShowWindow(hWnd, ShowWindowEnum.SHOW);
+                    }
+                }
+                SetForegroundWindow(hWnd);
+                SetFocus(hWnd);
+            }
+            else
+            {
+                uint thread1 = GetWindowThreadProcessId(hWndForeground, out uint dummy);
+                uint thread2 = GetCurrentThreadId();
+                try
+                {
+                    AttachThreadInput(thread1, thread2, true);
+                }
+                catch
+                {
+                }
+                LockSetForegroundWindow(LSFW_UNLOCK);
+                AllowSetForegroundWindow(ASFW_ANY);
+                BringWindowToTop(hWnd);
+                SetForegroundWindow(hWnd);
+
+                ShowWindow(hWnd, ShowWindowEnum.SHOW);
+                SetFocus(hWnd);
+                AttachThreadInput(thread1, thread2, false);
+            }
         }
     }
 }

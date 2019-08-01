@@ -66,13 +66,6 @@
                 </div>
             </div>
         </div>
-        <div type="checkbox" class="sdpi-item" style="display:none;">
-            <div class="sdpi-item-label">Resize Window</div>
-            <div class="sdpi-item-value">
-                <input id="resizeWindow1" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
-                <label for="resizeWindow1" class="sdpi-item-label"><span></span>&nbsp;</label>
-            </div>
-        </div>
         <div class="sdpi-item" id="dvHeight">
             <div class="sdpi-item-label">Height</div>
             <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="height" pattern="^[0-9]*$" oninput="setSettings()">
@@ -81,6 +74,42 @@
             <div class="sdpi-item-label">Width</div>
             <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="width" pattern="^[0-9]*$" oninput="setSettings()">
         </div>
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Topmost</div>
+            <div class="sdpi-item-value">
+                <input id="topmostWindow" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="topmostWindow" class="sdpi-item-label"><span></span>Make window topmost</label>
+            </div>
+        </div>
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Location Filter</div>
+            <div class="sdpi-item-value">
+                <input id="filterLocation" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="filterLocation" class="sdpi-item-label"><span></span>Only exe in a specific folder</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvLocationFilter">
+            <div class="sdpi-item-label">Location Filter</div>
+            <input class="sdpi-item-value sdProperty" placeholder="c:\program files\firefox" value="" id="locationFilter" oninput="setSettings()">
+        </div>
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Title Filter</div>
+            <div class="sdpi-item-value">
+                <input id="filterTitle" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="filterTitle" class="sdpi-item-label"><span></span>Filter title with specifc text</label>
+            </div>
+        </div>
+        <div class="sdpi-item" id="dvTitleFilter">
+            <div class="sdpi-item-label">Title Filter</div>
+            <input class="sdpi-item-value sdProperty" placeholder="Google" value="" id="titleFilter" oninput="setSettings()">
+        </div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Retry Attempts</div>
+            <input class="sdpi-item-value sdProperty" placeholder="24" value="" pattern="^[0-9]*$" id="retryAttempts" oninput="setSettings()">
+        </div>
+        <details class="message">
+            <summary>Will retry every 5s this many times if process is not loaded.</summary>
+        </details>
     </div>
 </body>
 </html>

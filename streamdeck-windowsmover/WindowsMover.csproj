@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommandLine, Version=2.5.0.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
@@ -73,6 +75,7 @@
     <Compile Include="WindowPosition.cs" />
     <Compile Include="WindowsMoverAction.cs" />
     <Compile Include="MonitorFriendly.cs" />
+    <Compile Include="Wrappers\MoveProcessSettings.cs" />
     <Compile Include="Wrappers\ProcessInfo.cs" />
     <Compile Include="Wrappers\ScreenInfo.cs" />
     <Compile Include="Wrappers\WindowSize.cs" />

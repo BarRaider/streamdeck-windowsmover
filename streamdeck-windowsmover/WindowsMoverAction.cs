@@ -31,7 +31,13 @@ namespace BarRaider.WindowsMover
                     ResizeWindow = false,
                     MaximizeWindow = false,
                     MinimizeWindow = false,
-                    ScreenFriendlyName = true
+                    ScreenFriendlyName = true,
+                    TopmostWindow = false,
+                    ShouldFilterLocation = false,
+                    LocationFilter = String.Empty,
+                    ShouldFilterTitle = false,
+                    TitleFilter = String.Empty,
+                    RetryAttempts = "12"
                 };
 
                 return instance;
@@ -76,12 +82,30 @@ namespace BarRaider.WindowsMover
             [JsonProperty(PropertyName = "screens")]
             public List<ScreenInfo> Screens { get; set; }
 
+            [JsonProperty(PropertyName = "topmostWindow")] 
+            public bool TopmostWindow { get; set; }
 
+            [JsonProperty(PropertyName = "filterLocation")]
+            public bool ShouldFilterLocation { get; set; }
+
+            [JsonProperty(PropertyName = "locationFilter")]
+            public string LocationFilter { get; set; }
+
+            [JsonProperty(PropertyName = "filterTitle")]
+            public bool ShouldFilterTitle { get; set; }
+
+            [JsonProperty(PropertyName = "titleFilter")]
+            public string TitleFilter { get; set; }
+
+            [JsonProperty(PropertyName = "retryAttempts")]
+            public string RetryAttempts { get; set; }
         }
 
         #region Private Members
 
         private readonly PluginSettings settings;
+        private readonly System.Timers.Timer tmrRetryProcess = new System.Timers.Timer();
+        private int retryAttempts = 0;
 
         #endregion
         public WindowsMoverAction(SDConnection connection, InitialPayload payload) : base(connection, payload)
@@ -95,6 +119,8 @@ namespace BarRaider.WindowsMover
                 this.settings = payload.Settings.ToObject<PluginSettings>();
             }
             connection.StreamDeckConnection.OnSendToPlugin += StreamDeckConnection_OnSendToPlugin;
+            tmrRetryProcess.Interval = 5000;
+            tmrRetryProcess.Elapsed += TmrRetryProcess_Elapsed;
 
             PopulateApplications();
             PopulateScreens();
@@ -270,7 +296,28 @@ namespace BarRaider.WindowsMover
                 return;
             }
 
-            WindowPosition.MoveProcess(settings.ApplicationName, screen, new System.Drawing.Point(xPosition, yPosition), windowResize, windowSize);
+            var processCount = WindowPosition.MoveProcess(new MoveProcessSettings() {  Name = settings.ApplicationName,
+                                                                                       DestinationScreen = screen,
+                                                                                       Position = new System.Drawing.Point(xPosition, yPosition),
+                                                                                       WindowResize = windowResize,
+                                                                                       WindowSize = windowSize,
+                                                                                       MakeTopmost = settings.TopmostWindow,
+                                                                                       LocationFilter = settings.ShouldFilterLocation ? settings.LocationFilter : null,
+                                                                                       TitleFilter = settings.ShouldFilterTitle ? settings.TitleFilter : null});
+
+            if (processCount > 0)
+            {
+                tmrRetryProcess.Stop();
+            }
+            else if (processCount == 0 && !tmrRetryProcess.Enabled)
+            {
+                if  (!Int32.TryParse(settings.RetryAttempts, out retryAttempts))
+                {
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid RetryAttempts: {settings.RetryAttempts}");
+                    return;
+                }
+                tmrRetryProcess.Start();
+            }
         }
 
         private async Task FetchWindowLocation()
@@ -316,6 +363,20 @@ namespace BarRaider.WindowsMover
                 }
             }
         }
+
+        private async void TmrRetryProcess_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            retryAttempts--;
+
+            if (retryAttempts <= 0)
+            {
+                tmrRetryProcess.Stop();
+                return;
+            }
+
+            await MoveApplication();
+        }
+
 
         #endregion
     }

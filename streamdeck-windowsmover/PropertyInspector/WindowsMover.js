@@ -22,8 +22,19 @@
 function checkResize(payload) {
     console.log("Checking Resize Setting");
     setHeightWidthWrapper("none");
+    setLocationFilterWrapper("none");
+    setTitleFilterWrapper("none");
     if (payload['resizeWindow']) {
         setHeightWidthWrapper("");
+    }
+
+    if (payload['filterLocation']) {
+        setLocationFilterWrapper("");
+    }
+
+    if (payload['filterTitle']) {
+        setTitleFilterWrapper("");
+
     }
 }
 
@@ -32,6 +43,16 @@ function setHeightWidthWrapper(displayValue) {
     var dvWidth = document.getElementById('dvWidth');
     dvHeight.style.display = displayValue;
     dvWidth.style.display = displayValue;
+}
+
+function setLocationFilterWrapper(displayValue) {
+    var dvLocation = document.getElementById('dvLocationFilter');
+    dvLocation.style.display = displayValue;
+}
+
+function setTitleFilterWrapper(displayValue) {
+    var dvTitle = document.getElementById('dvTitleFilter');
+    dvTitle.style.display = displayValue;
 }
 
 function getWindowDetails() {
