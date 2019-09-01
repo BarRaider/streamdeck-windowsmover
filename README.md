@@ -4,12 +4,8 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
-## New in v1.8
-- `Auto Retry` feature will attempt to retry moving the window if the process is not yet loaded
-- `Make Topmost `feature will attempt to make the window pop up to the front of the screen
-- `Location Filter` allows to filter processes to a specific directory
-- `Title Filter` allows to filter out processes that don't have certain words in the window title. **Note:** Chrome/Firefox act weird and the titles change based on the current open tab (your mileage may vary)
-
+## New in v1.8.1
+- `Only Make Topmost` feature allows moving an application to top, without moving or resizing it. Useful along with SuperMacro to send key-presses in a Multi-Action.
 
 ## Features
 - Multi-Screen support, move applications across multiple screens
@@ -18,6 +14,10 @@ Allows you to control the position and size of application windows on your Windo
 - Plugin will fill coordinates  with where the windows is currently located (and also height/width of window)
 - Supports Minimizing/Maximizing windows
 - Option to remove the screen's "Friendly name" in cases where you have multiple monitors of the same kind.
+- `Auto Retry` feature will attempt to retry moving the window if the process is not yet loaded
+- `Make Topmost `feature will attempt to make the window pop up to the front of the screen
+- `Location Filter` allows to filter processes to a specific directory
+- `Title Filter` allows to filter out processes that don't have certain words in the window title. **Note:** Chrome/Firefox act weird and the titles change based on the current open tab (your mileage may vary)
 
 ### Download
 
