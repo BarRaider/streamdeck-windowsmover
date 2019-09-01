@@ -31,6 +31,7 @@ namespace BarRaider.WindowsMover
                     ResizeWindow = false,
                     MaximizeWindow = false,
                     MinimizeWindow = false,
+                    OnlyTopmost = false,
                     ScreenFriendlyName = true,
                     TopmostWindow = false,
                     ShouldFilterLocation = false,
@@ -60,6 +61,9 @@ namespace BarRaider.WindowsMover
 
             [JsonProperty(PropertyName = "resizeWindow")]
             public bool ResizeWindow { get; set; }
+
+            [JsonProperty(PropertyName = "onlyTopmost")]
+            public bool OnlyTopmost { get; set; }
 
             [JsonProperty(PropertyName = "height")]
             public string Height { get; set; }
@@ -162,6 +166,14 @@ namespace BarRaider.WindowsMover
             {
                 PopulateScreens();
             }
+
+
+            // Make sure TopmostWindow is set, if I choose the OnlyTopmost setting
+            if (settings.OnlyTopmost && !settings.TopmostWindow)
+            {
+                settings.TopmostWindow = true;
+            }
+
             SaveSettings();
         }
 
@@ -286,6 +298,10 @@ namespace BarRaider.WindowsMover
             else if (settings.MinimizeWindow)
             {
                 windowResize = WindowResize.Minimize;
+            }
+            else if (settings.OnlyTopmost)
+            {
+                windowResize = WindowResize.OnlyTopmost;
             }
 
             var screen = Screen.AllScreens.Where(s => s.DeviceName == settings.Screen).FirstOrDefault();

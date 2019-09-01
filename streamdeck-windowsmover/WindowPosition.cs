@@ -16,7 +16,8 @@ namespace BarRaider.WindowsMover
         NoResize = 0,
         Maximize = 1,
         Minimize = 2,
-        ResizeWindow = 3
+        ResizeWindow = 3,
+        OnlyTopmost = 4
     }
 
     public enum ShowWindowEnum : int
@@ -203,10 +204,16 @@ namespace BarRaider.WindowsMover
                         ShowWindow(h1, ShowWindowEnum.SHOWNORMAL);
                     }
 
-                    SetWindowPos(h1, new IntPtr(0), settings.DestinationScreen.WorkingArea.X + settings.Position.X, settings.DestinationScreen.WorkingArea.Y + settings.Position.Y, width, height, flags);
+                    // Do not change window position or location in the "OnlyTopmost" setting is set
+                    if (settings.WindowResize != WindowResize.OnlyTopmost)
+                    {
+                        // Resize and move window
+                        SetWindowPos(h1, new IntPtr(0), settings.DestinationScreen.WorkingArea.X + settings.Position.X, settings.DestinationScreen.WorkingArea.Y + settings.Position.Y, width, height, flags);
+                    }
+
                     if (settings.WindowResize == WindowResize.Maximize)
                     {
-                        // Minimize the window.
+                        // Maximize the window.
                         ShowWindow(h1, ShowWindowEnum.SHOWMAXIMIZED);
                     }
                     else if (settings.WindowResize == WindowResize.Minimize)
