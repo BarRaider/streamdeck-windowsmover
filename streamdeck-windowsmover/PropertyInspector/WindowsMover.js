@@ -24,6 +24,8 @@ function checkResize(payload) {
     setHeightWidthWrapper("none");
     setLocationFilterWrapper("none");
     setTitleFilterWrapper("none");
+    setApplicationChooser("none");
+
     if (payload['resizeWindow']) {
         setHeightWidthWrapper("");
     }
@@ -34,7 +36,10 @@ function checkResize(payload) {
 
     if (payload['filterTitle']) {
         setTitleFilterWrapper("");
+    }
 
+    if (payload['appSpecific']) {
+        setApplicationChooser("");
     }
 }
 
@@ -53,6 +58,13 @@ function setLocationFilterWrapper(displayValue) {
 function setTitleFilterWrapper(displayValue) {
     var dvTitle = document.getElementById('dvTitleFilter');
     dvTitle.style.display = displayValue;
+}
+
+function setApplicationChooser(displayValue) {
+    var dvAppSpecific = document.getElementById('dvAppSpecific');
+    var dvAppFilters = document.getElementById('dvAppFilters');
+    dvAppSpecific.style.display = displayValue;
+    dvAppFilters.style.display = displayValue;
 }
 
 function getWindowDetails() {

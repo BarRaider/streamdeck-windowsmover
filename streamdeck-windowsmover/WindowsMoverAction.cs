@@ -21,6 +21,8 @@ namespace BarRaider.WindowsMover
             {
                 PluginSettings instance = new PluginSettings
                 {
+                    AppSpecific = true,
+                    AppCurrent = false,
                     ApplicationName = String.Empty,
                     Screen = String.Empty,
                     Height = "900",
@@ -103,6 +105,12 @@ namespace BarRaider.WindowsMover
 
             [JsonProperty(PropertyName = "retryAttempts")]
             public string RetryAttempts { get; set; }
+
+            [JsonProperty(PropertyName = "appSpecific")]
+            public bool AppSpecific { get; set; }
+
+            [JsonProperty(PropertyName = "appCurrent")]
+            public bool AppCurrent { get; set; }
         }
 
         #region Private Members
@@ -126,6 +134,12 @@ namespace BarRaider.WindowsMover
             tmrRetryProcess.Interval = 5000;
             tmrRetryProcess.Elapsed += TmrRetryProcess_Elapsed;
 
+            // Used for backward compatibility 
+            if (!settings.AppSpecific && !settings.AppCurrent)
+            {
+                settings.AppSpecific = true;
+            }
+
             PopulateApplications();
             PopulateScreens();
             SaveSettings();
@@ -148,7 +162,7 @@ namespace BarRaider.WindowsMover
 
         public async override void OnTick()
         {
-            if (!String.IsNullOrEmpty(settings.ApplicationName))
+            if (settings.AppSpecific && !String.IsNullOrEmpty(settings.ApplicationName))
             {
                 await Connection.SetTitleAsync(settings.ApplicationName);
             }
@@ -233,7 +247,7 @@ namespace BarRaider.WindowsMover
                 return;
             }
 
-            if (String.IsNullOrWhiteSpace(settings.ApplicationName))
+            if (settings.AppSpecific && String.IsNullOrWhiteSpace(settings.ApplicationName))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"Application not specified.");
                 await Connection.ShowAlert();
@@ -312,7 +326,8 @@ namespace BarRaider.WindowsMover
                 return;
             }
 
-            var processCount = WindowPosition.MoveProcess(new MoveProcessSettings() {  Name = settings.ApplicationName,
+            var processCount = WindowPosition.MoveProcess(new MoveProcessSettings() {  AppSpecific = settings.AppSpecific,
+                                                                                       Name = settings.ApplicationName,
                                                                                        DestinationScreen = screen,
                                                                                        Position = new System.Drawing.Point(xPosition, yPosition),
                                                                                        WindowResize = windowResize,

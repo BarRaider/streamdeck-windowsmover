@@ -10,6 +10,7 @@ namespace BarRaider.WindowsMover.Wrappers
 {
     public class MoveProcessSettings
     {
+        public bool AppSpecific { get; set; }
         public string Name { get; set; }
 
         public Screen DestinationScreen { get; set; }
@@ -28,7 +29,7 @@ namespace BarRaider.WindowsMover.Wrappers
 
         public override string ToString()
         {
-            return $"ProcessName: {Name} DestinationScreen: {DestinationScreen?.DeviceName} Position: {Position.X},{Position.Y} Resize: {WindowResize} Height: {WindowSize?.Height} Width: {WindowSize?.Width} TopMost: {MakeTopmost} LocationFilter: {LocationFilter} TitleFilter: {TitleFilter}";
+            return $"AppSpecific: {AppSpecific} ProcessName: {Name} DestinationScreen: {DestinationScreen?.DeviceName} Position: {Position.X},{Position.Y} Resize: {WindowResize} Height: {WindowSize?.Height} Width: {WindowSize?.Width} TopMost: {MakeTopmost} LocationFilter: {LocationFilter} TitleFilter: {TitleFilter}";
 
         }
     }

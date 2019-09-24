@@ -13,15 +13,34 @@
 <body>
     <div class="sdpi-wrapper">
         <details class="message">
-            <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.github.io</span></summary>
+            <summary>For feedback/suggestions contact me at <span class="linkspan" onclick="openWebsite()">https://BarRaider.com</span></summary>
         </details>
-        <div class="sdpi-item" id="dvApplications">
-            <div class="sdpi-item-label">Application</div>
-            <select class="sdpi-item-value select sdProperty sdList" id="applications" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="applicationName"></select>
-        </div>
         <details class="message">
-            <summary>Note: Only applications that are currently running are shown in the list above.</summary>
+            <summary>Note: "Current Focused" will pick the window that is focused when the button is pressed</summary>
         </details>
+        <div type="radio" class="sdpi-item" id="rdWindowResize">
+            <div class="sdpi-item-label">Application</div>
+            <div class="sdpi-item-value ">
+
+                <div class="sdpi-item-child">
+                    <input id="appCurrent" class="sdProperty sdCheckbox" type="radio" name="rdApplication" checked oninput="setSettings()">
+                    <label for="appCurrent" class="sdpi-item-label"><span></span>Current Focused Window</label>
+                </div>
+                <div class="sdpi-item-child">
+                    <input id="appSpecific" class="sdProperty sdCheckbox" type="radio" name="rdApplication" oninput="setSettings()">
+                    <label for="appSpecific" class="sdpi-item-label"><span></span>Specific Application</label>
+                </div>
+            </div>
+        </div>
+        <div id="dvAppSpecific">
+            <div class="sdpi-item" id="dvApplications">
+                <div class="sdpi-item-label">App Name</div>
+                <select class="sdpi-item-value select sdProperty sdList" id="applications" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="applicationName"></select>
+            </div>
+            <details class="message">
+                <summary>Note: Only applications that are currently running are shown in the list above.</summary>
+            </details>
+        </div>
         <div class="sdpi-item" id="dvScreens">
             <div class="sdpi-item-label">Screen</div>
             <select class="sdpi-item-value select sdProperty sdList" id="screens" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="device" sdValueField="screen"></select>
@@ -85,27 +104,29 @@
                 <label for="topmostWindow" class="sdpi-item-label"><span></span>Make window topmost</label>
             </div>
         </div>
-        <div type="checkbox" class="sdpi-item">
-            <div class="sdpi-item-label">Location Filter</div>
-            <div class="sdpi-item-value">
-                <input id="filterLocation" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
-                <label for="filterLocation" class="sdpi-item-label"><span></span>Only exe in a specific folder</label>
+        <div id="dvAppFilters">
+            <div type="checkbox" class="sdpi-item">
+                <div class="sdpi-item-label">Location Filter</div>
+                <div class="sdpi-item-value">
+                    <input id="filterLocation" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                    <label for="filterLocation" class="sdpi-item-label"><span></span>Only exe in a specific folder</label>
+                </div>
             </div>
-        </div>
-        <div class="sdpi-item" id="dvLocationFilter">
-            <div class="sdpi-item-label">Location Filter</div>
-            <input class="sdpi-item-value sdProperty" placeholder="c:\program files\firefox" value="" id="locationFilter" oninput="setSettings()">
-        </div>
-        <div type="checkbox" class="sdpi-item">
-            <div class="sdpi-item-label">Title Filter</div>
-            <div class="sdpi-item-value">
-                <input id="filterTitle" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
-                <label for="filterTitle" class="sdpi-item-label"><span></span>Filter title with specifc text</label>
+            <div class="sdpi-item" id="dvLocationFilter">
+                <div class="sdpi-item-label">Location Filter</div>
+                <input class="sdpi-item-value sdProperty" placeholder="c:\program files\firefox" value="" id="locationFilter" oninput="setSettings()">
             </div>
-        </div>
-        <div class="sdpi-item" id="dvTitleFilter">
-            <div class="sdpi-item-label">Title Filter</div>
-            <input class="sdpi-item-value sdProperty" placeholder="Google" value="" id="titleFilter" oninput="setSettings()">
+            <div type="checkbox" class="sdpi-item">
+                <div class="sdpi-item-label">Title Filter</div>
+                <div class="sdpi-item-value">
+                    <input id="filterTitle" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                    <label for="filterTitle" class="sdpi-item-label"><span></span>Filter title with specifc text</label>
+                </div>
+            </div>
+            <div class="sdpi-item" id="dvTitleFilter">
+                <div class="sdpi-item-label">Title Filter</div>
+                <input class="sdpi-item-value sdProperty" placeholder="Google" value="" id="titleFilter" oninput="setSettings()">
+            </div>
         </div>
         <div class="sdpi-item">
             <div class="sdpi-item-label">Retry Attempts</div>

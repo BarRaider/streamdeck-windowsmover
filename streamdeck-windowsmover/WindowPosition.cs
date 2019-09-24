@@ -148,6 +148,9 @@ namespace BarRaider.WindowsMover
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
         public static int MoveProcess(MoveProcessSettings settings)
         {
             if (settings == null)
@@ -171,78 +174,91 @@ namespace BarRaider.WindowsMover
             }
 
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for: {settings.ToString()}");
-            int totalProcesses = 0;
-            int movedProcesses = 0;
-            foreach (var process in System.Diagnostics.Process.GetProcessesByName(settings.Name))
+            if (!settings.AppSpecific)
+            {
+                ManipulateWindow(GetForegroundWindow(), settings, width, height, flags);
+                return 1;
+            }
+            else
+            {
+                int totalProcesses = 0;
+                int movedProcesses = 0;
+                foreach (var process in System.Diagnostics.Process.GetProcessesByName(settings.Name))
+                {
+                    try
+                    {
+                        totalProcesses++;
+                        IntPtr h1 = process.MainWindowHandle;
+                        if (h1.ToInt32() == 0)
+                        {
+                            continue;
+                        }
+                        Logger.Instance.LogMessage(TracingLevel.INFO, $"Found {settings.Name} with handle {h1}");
+
+                        if (!String.IsNullOrEmpty(settings.LocationFilter) && !process.MainModule.FileName.ToLowerInvariant().Contains(settings.LocationFilter.ToLowerInvariant()))
+                        {
+                            Logger.Instance.LogMessage(TracingLevel.INFO, $"Skipped {settings.Name} with handle {h1} as the file location was different from \"{settings.LocationFilter}\": {process.MainModule.FileName}");
+                            continue;
+                        }
+
+                        if (!String.IsNullOrEmpty(settings.TitleFilter) && !process.MainWindowTitle.Contains(settings.TitleFilter))
+                        {
+                            Logger.Instance.LogMessage(TracingLevel.INFO, $"Skipped {settings.Name} with handle {h1} as the window title was different from \"{settings.TitleFilter}\": {process.MainWindowTitle}");
+                            continue;
+                        }
+                        movedProcesses++;
+
+                        ManipulateWindow(h1, settings, width, height, flags);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error setting window for process {settings.Name} {ex}");
+                    }
+                }
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"Iterated through {totalProcesses} processes, moved {movedProcesses}");
+
+                return movedProcesses;
+            }
+        }
+
+        private static void ManipulateWindow(IntPtr windowHandle, MoveProcessSettings settings, int width, int height, SetWindowPosFlags flags)
+        {
+            // Needed to support multi-maximize clicks
+            if (settings.WindowResize != WindowResize.Minimize)
+            {
+                ShowWindow(windowHandle, ShowWindowEnum.SHOWNORMAL);
+            }
+
+            // Do not change window position or location in the "OnlyTopmost" setting is set
+            if (settings.WindowResize != WindowResize.OnlyTopmost)
+            {
+                // Resize and move window
+                SetWindowPos(windowHandle, new IntPtr(0), settings.DestinationScreen.WorkingArea.X + settings.Position.X, settings.DestinationScreen.WorkingArea.Y + settings.Position.Y, width, height, flags);
+            }
+
+            if (settings.WindowResize == WindowResize.Maximize)
+            {
+                // Maximize the window.
+                ShowWindow(windowHandle, ShowWindowEnum.SHOWMAXIMIZED);
+            }
+            else if (settings.WindowResize == WindowResize.Minimize)
+            {
+                // Minimize the window.
+                ShowWindow(windowHandle, ShowWindowEnum.MINIMIZE);
+            }
+            SetForegroundWindow(windowHandle);
+
+            if (settings.MakeTopmost)
             {
                 try
                 {
-                    totalProcesses++;
-                    IntPtr h1 = process.MainWindowHandle;
-                    if (h1.ToInt32() == 0)
-                    {
-                        continue;
-                    }
-                    Logger.Instance.LogMessage(TracingLevel.INFO, $"Found {settings.Name} with handle {h1}");
-
-                    if (!String.IsNullOrEmpty(settings.LocationFilter) && !process.MainModule.FileName.ToLowerInvariant().Contains(settings.LocationFilter.ToLowerInvariant()))
-                    {
-                        Logger.Instance.LogMessage(TracingLevel.INFO, $"Skipped {settings.Name} with handle {h1} as the file location was different from \"{settings.LocationFilter}\": {process.MainModule.FileName}");
-                        continue;
-                    }
-
-                    if (!String.IsNullOrEmpty(settings.TitleFilter) && !process.MainWindowTitle.Contains(settings.TitleFilter))
-                    {
-                        Logger.Instance.LogMessage(TracingLevel.INFO, $"Skipped {settings.Name} with handle {h1} as the window title was different from \"{settings.TitleFilter}\": {process.MainWindowTitle}");
-                        continue;
-                    }
-
-                    movedProcesses++;
-                    // Needed to support multi-maximize clicks
-                    if (settings.WindowResize != WindowResize.Minimize)
-                    {
-                        ShowWindow(h1, ShowWindowEnum.SHOWNORMAL);
-                    }
-
-                    // Do not change window position or location in the "OnlyTopmost" setting is set
-                    if (settings.WindowResize != WindowResize.OnlyTopmost)
-                    {
-                        // Resize and move window
-                        SetWindowPos(h1, new IntPtr(0), settings.DestinationScreen.WorkingArea.X + settings.Position.X, settings.DestinationScreen.WorkingArea.Y + settings.Position.Y, width, height, flags);
-                    }
-
-                    if (settings.WindowResize == WindowResize.Maximize)
-                    {
-                        // Maximize the window.
-                        ShowWindow(h1, ShowWindowEnum.SHOWMAXIMIZED);
-                    }
-                    else if (settings.WindowResize == WindowResize.Minimize)
-                    {
-                        // Minimize the window.
-                        ShowWindow(h1, ShowWindowEnum.MINIMIZE);
-                    }
-                    SetForegroundWindow(h1);
-
-                    if (settings.MakeTopmost)
-                    {
-                        try
-                        {
-                            TryForceForegroundWindow(h1);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Instance.LogMessage(TracingLevel.WARN, $"Failed to make topmost {settings.Name} {ex}");
-                        }
-                    }
+                    TryForceForegroundWindow(windowHandle);
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.LogMessage(TracingLevel.ERROR, $"Error setting window for process {settings.Name} {ex}");
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Failed to make topmost {settings.Name} {ex}");
                 }
             }
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Iterated through {totalProcesses} processes, moved {movedProcesses}");
-
-            return movedProcesses;
         }
 
         public static Rectangle GetWindowPostion(string processName)
@@ -281,9 +297,6 @@ namespace BarRaider.WindowsMover
 
         [DllImport("user32.dll")]
         static extern bool AllowSetForegroundWindow(int dwProcessId);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
