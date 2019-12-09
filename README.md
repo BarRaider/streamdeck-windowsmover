@@ -4,8 +4,9 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
-## New in v1.9
-- Instead of choosing a specific application, you can now choose to manipulate the current focused window. This allows you to "snap"/"resize" the current focused app to various areas on the screen.
+## New in v2.0
+- Significant update to the logic of determining which monitor to move the app to. Should solve problems caused by NVIDIA and Windows updates.
+- Bug fixes
 
 ## Features
 - Multi-Screen support, move applications across multiple screens
