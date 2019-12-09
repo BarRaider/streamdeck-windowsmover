@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommandLine, Version=2.6.0.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
@@ -58,6 +60,7 @@
       <HintPath>..\..\..\DotNet\StreamDeck\packages\System.Drawing.Common.4.6.0\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -70,14 +73,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MonitorWrapper\AggregatedMonitorInfo.cs" />
+    <Compile Include="MonitorWrapper\Constants.cs" />
+    <Compile Include="MonitorWrapper\MonitorManager.cs" />
+    <Compile Include="MonitorWrapper\WMIMonitorInfo.cs" />
+    <Compile Include="Wrappers\EnumerableExtension.cs" />
+    <Compile Include="MonitorWrapper\MonitorFriendly.cs" />
+    <Compile Include="MonitorWrapper\MonitorInfo.cs" />
+    <Compile Include="MonitorWrapper\QueryMonitorInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WindowPosition.cs" />
-    <Compile Include="WindowsMoverAction.cs" />
-    <Compile Include="MonitorFriendly.cs" />
+    <Compile Include="Internal\WindowPosition.cs" />
+    <Compile Include="Actions\WindowsMoverAction.cs" />
+    <Compile Include="Internal\MonitorFriendly.cs" />
     <Compile Include="Wrappers\MoveProcessSettings.cs" />
     <Compile Include="Wrappers\ProcessInfo.cs" />
-    <Compile Include="Wrappers\ScreenInfo.cs" />
     <Compile Include="Wrappers\WindowSize.cs" />
   </ItemGroup>
   <ItemGroup>

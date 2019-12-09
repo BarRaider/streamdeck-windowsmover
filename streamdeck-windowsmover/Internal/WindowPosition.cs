@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace BarRaider.WindowsMover
+namespace BarRaider.WindowsMover.Internal
 {
     public enum WindowResize
     {
@@ -224,7 +224,7 @@ namespace BarRaider.WindowsMover
         private static void ManipulateWindow(IntPtr windowHandle, MoveProcessSettings settings, int width, int height, SetWindowPosFlags flags)
         {
             // Needed to support multi-maximize clicks
-            if (settings.WindowResize != WindowResize.Minimize)
+            if (settings.WindowResize != WindowResize.Minimize && settings.WindowResize != WindowResize.OnlyTopmost)
             {
                 ShowWindow(windowHandle, ShowWindowEnum.SHOWNORMAL);
             }
@@ -314,6 +314,10 @@ namespace BarRaider.WindowsMover
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool IsIconic(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool IsZoomed(IntPtr hWnd);
+
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr SetFocus(IntPtr hWnd);
 
@@ -327,12 +331,11 @@ namespace BarRaider.WindowsMover
             AllowSetForegroundWindow(ASFW_ANY);
 
             IntPtr hWndForeground = GetForegroundWindow();
-            SendKeys.SendWait("{UP}");
             if (hWndForeground.ToInt32() != 0)
             {
                 if (hWndForeground != hWnd)
                 {
-                    uint thread1 = GetWindowThreadProcessId(hWndForeground, out uint dummy);
+                    uint thread1 = GetWindowThreadProcessId(hWndForeground, out _);
                     uint thread2 = GetCurrentThreadId();
 
 
@@ -374,6 +377,11 @@ namespace BarRaider.WindowsMover
                         SetFocus(hWnd);
                         AttachThreadInput(thread1, thread2, false);
                     }
+                    else if (IsZoomed(hWnd))
+                    {
+                        BringWindowToTop(hWnd);
+                        ShowWindow(hWnd, ShowWindowEnum.SHOWMAXIMIZED);
+                    }
                     else
                     {
                         BringWindowToTop(hWnd);
@@ -385,7 +393,7 @@ namespace BarRaider.WindowsMover
             }
             else
             {
-                uint thread1 = GetWindowThreadProcessId(hWndForeground, out uint dummy);
+                uint thread1 = GetWindowThreadProcessId(hWndForeground, out _);
                 uint thread2 = GetCurrentThreadId();
                 try
                 {

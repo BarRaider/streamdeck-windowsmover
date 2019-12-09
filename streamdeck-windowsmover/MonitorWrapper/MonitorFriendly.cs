@@ -1,16 +1,13 @@
-﻿using BarRaider.SdTools;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace BarRaider.WindowsMover
+namespace BarRaider.WindowsMover.MonitorWrapper
 {
-    public static class MonitorFriendly
+    public static class ScreenInterrogatory
     {
         public const int ERROR_SUCCESS = 0;
 
@@ -305,19 +302,14 @@ namespace BarRaider.WindowsMover
 
         public static string DeviceFriendlyName(this Screen screen)
         {
-            try
-            {
-                var allFriendlyNames = GetAllMonitorsFriendlyNames().ToArray();
-                for (var index = 0; index < Screen.AllScreens.Length; index++)
-                    if (Equals(screen, Screen.AllScreens[index]))
-                        return allFriendlyNames[index];
-            }
-            catch(Exception ex)
-            {
-                Logger.Instance.LogMessage(TracingLevel.ERROR, $"DeviceFriendlyName Exception: {ex}");
-            }
+            var allFriendlyNames = GetAllMonitorsFriendlyNames();
+            for (var index = 0; index < Screen.AllScreens.Length; index++)
+                if (Equals(screen, Screen.AllScreens[index]))
+                    return allFriendlyNames.ToArray()[index];
             return null;
         }
 
     }
+
 }
+

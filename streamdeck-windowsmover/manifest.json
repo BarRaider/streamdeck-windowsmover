@@ -21,7 +21,7 @@
   "Name": "Windows Mover & Resizer",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "1.9",
+  "Version": "2.0",
   "CodePath": "com.barraider.windowsmover",
   "Category": "BarRaider",
   "CategoryIcon": "Images/categoryIcon",
