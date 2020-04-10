@@ -395,29 +395,36 @@ namespace BarRaider.WindowsMover.MonitorWrapper
         private static List<WMIMonitorInfo> GetWMIDisplayInfo()
         {
             List<WMIMonitorInfo> monitors = new List<WMIMonitorInfo>();
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\WMI", "SELECT * FROM WMIMonitorID");
-            foreach (ManagementObject obj in searcher.Get())
+            try
             {
-                bool isActive;
-                string instanceName;
-                string userFriendlyName;
-                string manufacturer;
-                string productCode;
-                string serialNumber;
-                UInt16 manufactureYear;
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\WMI", "SELECT * FROM WMIMonitorID");
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    bool isActive;
+                    string instanceName;
+                    string userFriendlyName;
+                    string manufacturer;
+                    string productCode;
+                    string serialNumber;
+                    UInt16 manufactureYear;
 
-                isActive = Convert.ToBoolean(obj["Active"]);
-                instanceName = obj["InstanceName"].ToString();
-                manufacturer = GetStringFromUInt16Array((UInt16[])obj["ManufacturerName"]);
-                productCode = GetStringFromUInt16Array((UInt16[])obj["ProductCodeID"]);
-                serialNumber = GetStringFromUInt16Array((UInt16[])obj["SerialNumberID"]);
-                userFriendlyName = GetStringFromUInt16Array((UInt16[])obj["UserFriendlyName"]);
-                manufactureYear = (UInt16)obj["YearOfManufacture"];
-                monitors.Add(new WMIMonitorInfo(isActive, instanceName, userFriendlyName, manufacturer, productCode, serialNumber, manufactureYear));
+                    isActive = Convert.ToBoolean(obj["Active"]);
+                    instanceName = obj["InstanceName"].ToString();
+                    manufacturer = GetStringFromUInt16Array((UInt16[])obj["ManufacturerName"]);
+                    productCode = GetStringFromUInt16Array((UInt16[])obj["ProductCodeID"]);
+                    serialNumber = GetStringFromUInt16Array((UInt16[])obj["SerialNumberID"]);
+                    userFriendlyName = GetStringFromUInt16Array((UInt16[])obj["UserFriendlyName"]);
+                    manufactureYear = (UInt16)obj["YearOfManufacture"];
+                    monitors.Add(new WMIMonitorInfo(isActive, instanceName, userFriendlyName, manufacturer, productCode, serialNumber, manufactureYear));
+                }
+
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"WMI returned {monitors.Count} monitors");
+                searcher.Dispose();
             }
-
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"WMI returned {monitors.Count} monitors");
-            searcher.Dispose();
+            catch (Exception ex)
+            {
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"GetWMIDisplayInfo Exception {ex}");
+            }
             return monitors;
         }
 

@@ -131,7 +131,7 @@ namespace BarRaider.WindowsMover
                 this.settings = payload.Settings.ToObject<PluginSettings>();
                 CheckBackwardsCompability();
             }
-            connection.StreamDeckConnection.OnSendToPlugin += StreamDeckConnection_OnSendToPlugin;
+            Connection.OnSendToPlugin += Connection_OnSendToPlugin;
             tmrRetryProcess.Interval = 5000;
             tmrRetryProcess.Elapsed += TmrRetryProcess_Elapsed;
 
@@ -148,7 +148,7 @@ namespace BarRaider.WindowsMover
 
         public override void Dispose()
         {
-            Connection.StreamDeckConnection.OnSendToPlugin -= StreamDeckConnection_OnSendToPlugin;
+            Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
         }
 
@@ -408,13 +408,9 @@ namespace BarRaider.WindowsMover
             }
         }
 
-        private async void StreamDeckConnection_OnSendToPlugin(object sender, streamdeck_client_csharp.StreamDeckEventReceivedEventArgs<streamdeck_client_csharp.Events.SendToPluginEvent> e)
+        private async void Connection_OnSendToPlugin(object sender, SdTools.Wrappers.SDEventReceivedEventArgs<SdTools.Events.SendToPlugin> e)
         {
             var payload = e.Event.Payload;
-            if (Connection.ContextId != e.Event.Context)
-            {
-                return;
-            }
 
             if (payload["property_inspector"] != null)
             {
