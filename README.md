@@ -4,9 +4,9 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.github.io](https://barraider.github.io)
 
-## New in v2.0
-- Significant update to the logic of determining which monitor to move the app to. Should solve problems caused by NVIDIA and Windows updates.
-- Bug fixes
+## New in v2.1
+- `Reload Apps` button (in settings) allows to reload the most recent list of applications
+- Improved Multi-Actions behavior
 
 ## Features
 - Multi-Screen support, move applications across multiple screens

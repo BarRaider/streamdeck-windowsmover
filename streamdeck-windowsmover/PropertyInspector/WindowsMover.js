@@ -72,3 +72,9 @@ function getWindowDetails() {
     payload.property_inspector = 'getWindowDetails';
     sendPayloadToPlugin(payload);
 }
+
+function reloadApps() {
+    var payload = {};
+    payload.property_inspector = 'reloadApps';
+    sendPayloadToPlugin(payload);
+}

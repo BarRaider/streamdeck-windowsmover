@@ -148,6 +148,7 @@ namespace BarRaider.WindowsMover
 
         public override void Dispose()
         {
+            tmrRetryProcess.Stop();
             Connection.OnSendToPlugin -= Connection_OnSendToPlugin;
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Destructor called");
         }
@@ -414,10 +415,16 @@ namespace BarRaider.WindowsMover
 
             if (payload["property_inspector"] != null)
             {
-                switch (payload["property_inspector"].ToString().ToLower())
+                switch (payload["property_inspector"].ToString().ToLowerInvariant())
                 {
                     case "getwindowdetails":
+                        Logger.Instance.LogMessage(TracingLevel.INFO, "getWindowDetails called");
                         await FetchWindowLocation();
+                        break;
+                    case "reloadapps":
+                        Logger.Instance.LogMessage(TracingLevel.INFO, "reloadApps called");
+                        PopulateApplications();
+                        await SaveSettings();
                         break;
                 }
             }

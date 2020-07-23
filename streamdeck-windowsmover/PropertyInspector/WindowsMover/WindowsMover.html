@@ -6,8 +6,8 @@
     <meta name=apple-mobile-web-app-capable content=yes>
     <meta name=apple-mobile-web-app-status-bar-style content=black>
     <title>BarRaider's Window Mover and Resizer</title>
-    <link rel="stylesheet" href="../sdpi.css">
-    <script src="../sdtools.common.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
+    <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
     <script src="../WindowsMover.js"></script>
 </head>
 <body>
@@ -37,10 +37,15 @@
                 <div class="sdpi-item-label">App Name</div>
                 <select class="sdpi-item-value select sdProperty sdList" id="applications" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="applicationName"></select>
             </div>
+            <div class="sdpi-item" id="dvRefreshApps">
+                <div class="sdpi-item-label">Refresh</div>
+                <button class="sdpi-item-value" onclick="reloadApps()">Reload Apps</button>
+            </div>
             <details class="message">
                 <summary>Note: Only applications that are currently running are shown in the list above.</summary>
             </details>
         </div>
+        <div class="sdpi-item-label empty"></div>
         <div class="sdpi-item" id="dvScreens">
             <div class="sdpi-item-label">Screen</div>
             <select class="sdpi-item-value select sdProperty sdList" id="screens" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="uniqueValue" sdValueField="screen"></select>
