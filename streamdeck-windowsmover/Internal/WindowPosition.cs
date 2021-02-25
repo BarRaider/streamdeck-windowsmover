@@ -173,7 +173,7 @@ namespace BarRaider.WindowsMover.Internal
                 width = settings.WindowSize.Width;
             }
 
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for: {settings.ToString()}");
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for: {settings}");
             if (!settings.AppSpecific)
             {
                 ManipulateWindow(GetForegroundWindow(), settings, width, height, flags);

@@ -5,10 +5,10 @@
     <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
     <meta name=apple-mobile-web-app-capable content=yes>
     <meta name=apple-mobile-web-app-status-bar-style content=black>
-    <title>BarRaider's Window Mover and Resizer</title>
+    <title>BarRaider's Virtual Desktop Mover</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdpi.css">
     <script src="https://cdn.jsdelivr.net/gh/barraider/streamdeck-easypi@latest/src/sdtools.common.js"></script>
-    <script src="../WindowsMover.js"></script>
+    <script src="VirtualDesktopMover.js"></script>
 </head>
 <body>
     <div class="sdpi-wrapper">
@@ -45,70 +45,15 @@
                 <summary>Note: Only applications that are currently running are shown in the list above.</summary>
             </details>
         </div>
-        <div class="sdpi-item-label empty"></div>
-        <div class="sdpi-item" id="dvScreens">
-            <div class="sdpi-item-label">Screen</div>
-            <select class="sdpi-item-value select sdProperty sdList" id="screens" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="uniqueValue" sdValueField="screen"></select>
-        </div>
-        <div type="checkbox" class="sdpi-item" id="dvScreenFriendlyName">
-            <div class="sdpi-item-label">Screen Names</div>
-            <div class="sdpi-item-value">
-                <input id="screenFriendlyName" class="sdProperty sdCheckbox" type="checkbox" value="" oninput="setSettings()">
-                <label for="screenFriendlyName" class="sdpi-item-label"><span></span>Show screens friendly name</label>
-            </div>
+        <div class="sdpi-item" id="dvDesktops">
+            <div class="sdpi-item-label">Virtual Desktop</div>
+            <select class="sdpi-item-value select sdProperty sdList" id="desktops" oninput="setSettings()" sdListTextProperty="name" sdListValueProperty="name" sdValueField="desktopName"></select>
         </div>
         <div class="sdpi-item" id="dvReset">
-            <div class="sdpi-item-label">Coordinates</div>
-            <button class="sdpi-item-value" onclick="getWindowDetails()">Get current window coordinates</button>
+            <div class="sdpi-item-label empty"></div>
+            <button class="sdpi-item-value" onclick="refreshDesktops()">Refresh Desktops</button>
         </div>
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">X Position</div>
-            <input class="sdpi-item-value sdProperty" placeholder="200" value="" id="xPosition" pattern="^[0-9]*$" oninput="setSettings()">
-        </div>
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Y Position</div>
-            <input class="sdpi-item-value sdProperty" placeholder="0" value="" id="yPosition" pattern="^[0-9]*$" oninput="setSettings()">
-        </div>
-        <div type="radio" class="sdpi-item" id="rdWindowResize">
-            <div class="sdpi-item-label">Resize Window</div>
-            <div class="sdpi-item-value ">
-                <div class="sdpi-item-child">
-                    <input id="noResize" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" checked oninput="setSettings()">
-                    <label for="noResize" class="sdpi-item-label"><span></span>No Resize</label>
-                </div>
-                <div class="sdpi-item-child">
-                    <input id="maximizeWindow" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
-                    <label for="maximizeWindow" class="sdpi-item-label"><span></span>Maximize</label>
-                </div>
-                <div class="sdpi-item-child">
-                    <input id="minimizeWindow" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
-                    <label for="minimizeWindow" class="sdpi-item-label"><span></span>Minimize</label>
-                </div>
-                <div class="sdpi-item-child">
-                    <input id="resizeWindow" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
-                    <label for="resizeWindow" class="sdpi-item-label"><span></span>Resize</label>
-                </div>
-                <div class="sdpi-item-child">
-                    <input id="onlyTopmost" class="sdProperty sdCheckbox" type="radio" name="rdWindowResize" oninput="setSettings()">
-                    <label for="onlyTopmost" class="sdpi-item-label"><span></span>Only Make Topmost</label>
-                </div>
-            </div>
-        </div>
-        <div class="sdpi-item" id="dvHeight">
-            <div class="sdpi-item-label">Height</div>
-            <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="height" pattern="^[0-9]*$" oninput="setSettings()">
-        </div>
-        <div class="sdpi-item" id="dvWidth">
-            <div class="sdpi-item-label">Width</div>
-            <input class="sdpi-item-value sdProperty" placeholder="500" value="" id="width" pattern="^[0-9]*$" oninput="setSettings()">
-        </div>
-        <div type="checkbox" class="sdpi-item">
-            <div class="sdpi-item-label">Topmost</div>
-            <div class="sdpi-item-value">
-                <input id="topmostWindow" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
-                <label for="topmostWindow" class="sdpi-item-label"><span></span>Make window topmost</label>
-            </div>
-        </div>
+        <div class="sdpi-item-label empty"></div>
         <div id="dvAppFilters">
             <div type="checkbox" class="sdpi-item">
                 <div class="sdpi-item-label">Location Filter</div>

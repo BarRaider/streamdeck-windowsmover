@@ -44,20 +44,20 @@
       <HintPath>..\..\..\DotNet\StreamDeck\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\..\..\DotNet\StreamDeck\packages\NLog.4.7.4\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\..\..\DotNet\StreamDeck\packages\NLog.4.7.7\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="streamdeck-client-csharp, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\DotNet\StreamDeck\packages\streamdeck-client-csharp.4.2.0\lib\netstandard2.0\streamdeck-client-csharp.dll</HintPath>
+    <Reference Include="streamdeck-client-csharp, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\DotNet\StreamDeck\packages\streamdeck-client-csharp.4.3.0\lib\netstandard2.0\streamdeck-client-csharp.dll</HintPath>
     </Reference>
-    <Reference Include="StreamDeckTools, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\DotNet\StreamDeck\packages\StreamDeck-Tools.2.9.0\lib\net472\StreamDeckTools.dll</HintPath>
+    <Reference Include="StreamDeckTools, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\DotNet\StreamDeck\packages\StreamDeck-Tools.3.2.0\lib\net472\StreamDeckTools.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\..\DotNet\StreamDeck\packages\System.Drawing.Common.4.7.0\lib\net461\System.Drawing.Common.dll</HintPath>
+    <Reference Include="System.Drawing.Common, Version=4.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\..\DotNet\StreamDeck\packages\System.Drawing.Common.5.0.1\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
@@ -73,10 +73,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\VirtualDesktopPinAction.cs" />
+    <Compile Include="Actions\WindowsActionBase.cs" />
+    <Compile Include="Actions\VirtualDesktopMoverAction.cs" />
+    <Compile Include="Backend\VirtualDesktopProcessMover.cs" />
+    <Compile Include="Backend\VirtualDesktopProcessMoverSettings.cs" />
     <Compile Include="MonitorWrapper\AggregatedMonitorInfo.cs" />
     <Compile Include="MonitorWrapper\Constants.cs" />
     <Compile Include="MonitorWrapper\MonitorManager.cs" />
     <Compile Include="MonitorWrapper\WMIMonitorInfo.cs" />
+    <Compile Include="Backend\VirtualDesktop.cs" />
     <Compile Include="Wrappers\EnumerableExtension.cs" />
     <Compile Include="MonitorWrapper\MonitorFriendly.cs" />
     <Compile Include="MonitorWrapper\MonitorInfo.cs" />
@@ -88,6 +94,7 @@
     <Compile Include="Internal\MonitorFriendly.cs" />
     <Compile Include="Wrappers\MoveProcessSettings.cs" />
     <Compile Include="Wrappers\ProcessInfo.cs" />
+    <Compile Include="Wrappers\VirtualDesktopInfo.cs" />
     <Compile Include="Wrappers\WindowSize.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -122,10 +129,22 @@
     <Content Include="Images\windowIcon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="PropertyInspector\VirtualDesktopPin.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PropertyInspector\VirtualDesktopPin.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PropertyInspector\VirtualDesktopMover.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="PropertyInspector\WindowsMover.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PropertyInspector\WindowsMover\WindowsMover.html">
+    <Content Include="PropertyInspector\VirtualDesktopMover.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PropertyInspector\WindowsMover.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

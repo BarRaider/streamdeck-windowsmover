@@ -4,6 +4,13 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v2.2
+- :new: ***VIRTUAL DESKTOP SUPPORT***: 
+    - New `Virtual Desktop Mover` action allows moving apps across Virtual Desktops. 
+    - `Virtual Desktop Pin/Unpin` action  allows you to decide which apps are visible across all Virtual Desktops.
+- Use along with Win Tools plugin to manage Virtual Desktops and then move the desired apps to there.
+- Updated dependencies and improved load time
+
 ## New in v2.1
 - `Reload Apps` button (in settings) allows to reload the most recent list of applications
 - Improved Multi-Actions behavior

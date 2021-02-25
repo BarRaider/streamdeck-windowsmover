@@ -13,17 +13,47 @@
       "SupportedInMultiActions": true,
       "Tooltip": "Move and resize an application window",
       "UUID": "com.barraider.windowsmover",
-      "PropertyInspectorPath": "PropertyInspector/WindowsMover/WindowsMover.html"
+      "PropertyInspectorPath": "PropertyInspector/WindowsMover.html"
+    },
+    {
+      "Icon": "Images/windowIcon",
+      "Name": "Virtual Desktop Mover",
+      "States": [
+        {
+          "Image": "Images/window",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Moves a window to a different Virtual Desktop",
+      "UUID": "com.barraider.vdmover",
+      "PropertyInspectorPath": "PropertyInspector/VirtualDesktopMover.html"
+    },
+    {
+      "Icon": "Images/windowIcon",
+      "Name": "Virtual Desktop Pin/Unpin",
+      "States": [
+        {
+          "Image": "Images/window",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Pins or Unpins a window to all Virtual Desktops",
+      "UUID": "com.barraider.vdpin",
+      "PropertyInspectorPath": "PropertyInspector/VirtualDesktopPin.html"
     }
   ],
   "Author": "BarRaider",
-  "Description": "Allows you to control the position and size of application windows on your Windows PC. Maximize/Minimize windows or change height, width and position. Supports moving applications across multiple screens.",
+  "Description": "Allows you to control the position and size of application windows on your Windows PC. Maximize/Minimize windows or change height, width and position. Supports moving applications across multiple screens.\nNEW: Virtual Desktop support",
   "Name": "Windows Mover & Resizer",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "2.1",
+  "Version": "2.2",
   "CodePath": "com.barraider.windowsmover",
-  "Category": "BarRaider",
+  "Category": "Windows Mover [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
   "OS": [
     {
@@ -33,6 +63,6 @@
   ],
   "SDKVersion": 2,
   "Software": {
-    "MinimumVersion": "4.8"
+    "MinimumVersion": "4.9"
   }
 }

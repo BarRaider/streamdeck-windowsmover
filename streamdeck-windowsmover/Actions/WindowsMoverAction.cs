@@ -13,9 +13,9 @@ using System.Windows.Forms;
 namespace BarRaider.WindowsMover
 {
     [PluginActionId("com.barraider.windowsmover")]
-    public class WindowsMoverAction : PluginBase
+    public class WindowsMoverAction : WindowsActionBase
     {
-        private class PluginSettings
+        private class PluginSettings : PluginSettingsBase
         {
             public static PluginSettings CreateDefaultSettings()
             {
@@ -46,8 +46,11 @@ namespace BarRaider.WindowsMover
                 return instance;
             }
 
-            [JsonProperty(PropertyName = "applicationName")]
-            public string ApplicationName { get; set; }
+            [JsonProperty(PropertyName = "screens")]
+            public List<MonitorInfo> Screens { get; set; }
+
+            [JsonProperty(PropertyName = "topmostWindow")]
+            public bool TopmostWindow { get; set; }
 
             [JsonProperty(PropertyName = "screen")]
             public string Screen { get; set; }
@@ -81,41 +84,27 @@ namespace BarRaider.WindowsMover
 
             [JsonProperty(PropertyName = "screenFriendlyName")]
             public bool ScreenFriendlyName { get; set; }
-
-            [JsonProperty(PropertyName = "applications")]
-            public List<ProcessInfo> Applications { get; set; }
-
-            [JsonProperty(PropertyName = "screens")]
-            public List<MonitorInfo> Screens { get; set; }
-
-            [JsonProperty(PropertyName = "topmostWindow")]
-            public bool TopmostWindow { get; set; }
-
-            [JsonProperty(PropertyName = "filterLocation")]
-            public bool ShouldFilterLocation { get; set; }
-
-            [JsonProperty(PropertyName = "locationFilter")]
-            public string LocationFilter { get; set; }
-
-            [JsonProperty(PropertyName = "filterTitle")]
-            public bool ShouldFilterTitle { get; set; }
-
-            [JsonProperty(PropertyName = "titleFilter")]
-            public string TitleFilter { get; set; }
-
-            [JsonProperty(PropertyName = "retryAttempts")]
-            public string RetryAttempts { get; set; }
-
-            [JsonProperty(PropertyName = "appSpecific")]
-            public bool AppSpecific { get; set; }
-
-            [JsonProperty(PropertyName = "appCurrent")]
-            public bool AppCurrent { get; set; }
         }
 
         #region Private Members
 
-        private readonly PluginSettings settings;
+        private PluginSettings Settings
+        {
+            get
+            {
+                var result = settings as PluginSettings;
+                if (result == null)
+                {
+                    Logger.Instance.LogMessage(TracingLevel.ERROR, "Cannot convert PluginSettingsBase to PluginSettings");
+                }
+                return result;
+            }
+            set
+            {
+                settings = value;
+            }
+        }
+
         private readonly System.Timers.Timer tmrRetryProcess = new System.Timers.Timer();
         private int retryAttempts = 0;
 
@@ -124,11 +113,11 @@ namespace BarRaider.WindowsMover
         {
             if (payload.Settings == null || payload.Settings.Count == 0)
             {
-                this.settings = PluginSettings.CreateDefaultSettings();
+                this.Settings = PluginSettings.CreateDefaultSettings();
             }
             else
             {
-                this.settings = payload.Settings.ToObject<PluginSettings>();
+                this.Settings = payload.Settings.ToObject<PluginSettings>();
                 CheckBackwardsCompability();
             }
             Connection.OnSendToPlugin += Connection_OnSendToPlugin;
@@ -136,9 +125,9 @@ namespace BarRaider.WindowsMover
             tmrRetryProcess.Elapsed += TmrRetryProcess_Elapsed;
 
             // Used for backward compatibility 
-            if (!settings.AppSpecific && !settings.AppCurrent)
+            if (!Settings.AppSpecific && !Settings.AppCurrent)
             {
-                settings.AppSpecific = true;
+                Settings.AppSpecific = true;
             }
 
             PopulateApplications();
@@ -164,9 +153,9 @@ namespace BarRaider.WindowsMover
 
         public async override void OnTick()
         {
-            if (settings.AppSpecific && !String.IsNullOrEmpty(settings.ApplicationName))
+            if (Settings.AppSpecific && !String.IsNullOrEmpty(Settings.ApplicationName))
             {
-                await Connection.SetTitleAsync(settings.ApplicationName);
+                await Connection.SetTitleAsync(Settings.ApplicationName);
             }
             else
             {
@@ -176,18 +165,18 @@ namespace BarRaider.WindowsMover
 
         public override void ReceivedSettings(ReceivedSettingsPayload payload)
         {
-            bool screenFriendlyName = settings.ScreenFriendlyName;
-            Tools.AutoPopulateSettings(settings, payload.Settings);
-            if (screenFriendlyName != settings.ScreenFriendlyName)
+            bool screenFriendlyName = Settings.ScreenFriendlyName;
+            Tools.AutoPopulateSettings(Settings, payload.Settings);
+            if (screenFriendlyName != Settings.ScreenFriendlyName)
             {
                 PopulateScreens();
             }
 
 
             // Make sure TopmostWindow is set, if I choose the OnlyTopmost setting
-            if (settings.OnlyTopmost && !settings.TopmostWindow)
+            if (Settings.OnlyTopmost && !Settings.TopmostWindow)
             {
-                settings.TopmostWindow = true;
+                Settings.TopmostWindow = true;
             }
 
             SaveSettings();
@@ -197,30 +186,19 @@ namespace BarRaider.WindowsMover
 
         #region Private Methods
 
-
-        private Task SaveSettings()
+        protected override Task SaveSettings()
         {
-            return Connection.SetSettingsAsync(JObject.FromObject(settings));
-        }
-
-        private void PopulateApplications()
-        {
-            settings.Applications = System.Diagnostics.Process.GetProcesses().Select(p => new ProcessInfo(p.ProcessName)).GroupBy(p => p.Name).Select(p => p.First()).OrderBy(p => p.Name).ToList();
-            if (string.IsNullOrEmpty(settings.ApplicationName) && settings.Applications.Count > 0)
-            {
-                settings.ApplicationName = settings.Applications[0].Name;
-            }
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {settings.Applications.Count} applications");
+            return Connection.SetSettingsAsync(JObject.FromObject(Settings));
         }
 
         private void PopulateScreens()
         {
-            settings.Screens = MonitorManager.Instance.GetAllMonitors();
+            Settings.Screens = MonitorManager.Instance.GetAllMonitors();
             bool uniqueFriendly = MonitorManager.Instance.HasUniqueFriendlyName();
-            settings.Screens.ForEach(mon =>
+            Settings.Screens.ForEach(mon =>
             {
                 mon.DisplayName = mon.DeviceName;
-                if (settings.ScreenFriendlyName)
+                if (Settings.ScreenFriendlyName)
                 {
                     if (uniqueFriendly)
                     {
@@ -233,58 +211,30 @@ namespace BarRaider.WindowsMover
                 }
             });
 
-            if (string.IsNullOrWhiteSpace(settings.Screen) && settings.Screens.Count > 0)
+            if (string.IsNullOrWhiteSpace(Settings.Screen) && Settings.Screens.Count > 0)
             {
-                settings.Screen = settings.Screens[0].UniqueValue;
+                Settings.Screen = Settings.Screens[0].UniqueValue;
             }
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {settings.Screens.Count} screens");
+            Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {Settings.Screens.Count} screens");
         }
-
-        /*
-        private void PopulateScreens()
-        {
-            settings.Screens = Screen.AllScreens.Select(s =>
-            {
-                string friendlyName = s.DeviceName;
-                if (settings.ScreenFriendlyName)
-                {
-                    try
-                    {
-                        string friendlyNameStr = s.DeviceFriendlyName();
-                        if (!String.IsNullOrEmpty(friendlyNameStr))
-                        {
-                            friendlyName = friendlyNameStr;
-                        }
-                    }
-                    catch { }
-                }
-                return new ScreenInfo(s.DeviceName, friendlyName);
-            }).ToList();
-
-            if (string.IsNullOrWhiteSpace(settings.Screen) && settings.Screens.Count > 0)
-            {
-                settings.Screen = settings.Screens[0].DeviceName;
-            }
-            Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {settings.Screens.Count} screens");
-        }*/
 
         private async Task MoveApplication()
         {
-            if (String.IsNullOrWhiteSpace(settings.Screen))
+            if (String.IsNullOrWhiteSpace(Settings.Screen))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"Screen not specified.");
                 await Connection.ShowAlert();
                 return;
             }
 
-            if (settings.AppSpecific && String.IsNullOrWhiteSpace(settings.ApplicationName))
+            if (Settings.AppSpecific && String.IsNullOrWhiteSpace(Settings.ApplicationName))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"Application not specified.");
                 await Connection.ShowAlert();
                 return;
             }
 
-            if (String.IsNullOrWhiteSpace(settings.XPosition) || String.IsNullOrWhiteSpace(settings.YPosition))
+            if (String.IsNullOrWhiteSpace(Settings.XPosition) || String.IsNullOrWhiteSpace(Settings.YPosition))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"X or Y position not specified.");
                 await Connection.ShowAlert();
@@ -292,81 +242,81 @@ namespace BarRaider.WindowsMover
             }
 
 
-            if (!int.TryParse(settings.XPosition, out int xPosition))
+            if (!int.TryParse(Settings.XPosition, out int xPosition))
             {
-                Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid X position: {settings.XPosition}");
+                Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid X position: {Settings.XPosition}");
                 await Connection.ShowAlert();
                 return;
             }
 
-            if (!int.TryParse(settings.YPosition, out int yPosition))
+            if (!int.TryParse(Settings.YPosition, out int yPosition))
             {
-                Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid Y position: {settings.YPosition}");
+                Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid Y position: {Settings.YPosition}");
                 await Connection.ShowAlert();
                 return;
             }
 
             WindowSize windowSize = null;
             WindowResize windowResize = WindowResize.NoResize;
-            if (settings.ResizeWindow)
+            if (Settings.ResizeWindow)
             {
                 windowResize = WindowResize.ResizeWindow;
 
-                if (String.IsNullOrWhiteSpace(settings.Height) || String.IsNullOrWhiteSpace(settings.Width))
+                if (String.IsNullOrWhiteSpace(Settings.Height) || String.IsNullOrWhiteSpace(Settings.Width))
                 {
                     Logger.Instance.LogMessage(TracingLevel.WARN, $"Height or Width position not specified.");
                     await Connection.ShowAlert();
                     return;
                 }
 
-                if (!int.TryParse(settings.Height, out int height))
+                if (!int.TryParse(Settings.Height, out int height))
                 {
-                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid height: {settings.Height}");
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid height: {Settings.Height}");
                     await Connection.ShowAlert();
                     return;
                 }
 
-                if (!int.TryParse(settings.Width, out int width))
+                if (!int.TryParse(Settings.Width, out int width))
                 {
-                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid width: {settings.Width}");
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid width: {Settings.Width}");
                     await Connection.ShowAlert();
                     return;
                 }
 
                 windowSize = new WindowSize(height, width);
             }
-            else if (settings.MaximizeWindow)
+            else if (Settings.MaximizeWindow)
             {
                 windowResize = WindowResize.Maximize;
             }
-            else if (settings.MinimizeWindow)
+            else if (Settings.MinimizeWindow)
             {
                 windowResize = WindowResize.Minimize;
             }
-            else if (settings.OnlyTopmost)
+            else if (Settings.OnlyTopmost)
             {
                 windowResize = WindowResize.OnlyTopmost;
             }
 
-            Screen screen = MonitorManager.Instance.GetScreenFromUniqueValue(settings.Screen);
+            Screen screen = MonitorManager.Instance.GetScreenFromUniqueValue(Settings.Screen);
             if (screen == null)
             {
-                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Could not find screen {settings.Screen}");
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"Could not find screen {Settings.Screen}");
                 await Connection.ShowAlert();
                 return;
             }
 
             var processCount = WindowPosition.MoveProcess(new MoveProcessSettings()
             {
-                AppSpecific = settings.AppSpecific,
-                Name = settings.ApplicationName,
+                AppSpecific = Settings.AppSpecific,
+                Name = Settings.ApplicationName,
                 DestinationScreen = screen,
                 Position = new System.Drawing.Point(xPosition, yPosition),
                 WindowResize = windowResize,
                 WindowSize = windowSize,
-                MakeTopmost = settings.TopmostWindow,
-                LocationFilter = settings.ShouldFilterLocation ? settings.LocationFilter : null,
-                TitleFilter = settings.ShouldFilterTitle ? settings.TitleFilter : null
+                MakeTopmost = Settings.TopmostWindow,
+                LocationFilter = Settings.ShouldFilterLocation ? Settings.LocationFilter : null,
+                TitleFilter = Settings.ShouldFilterTitle ? Settings.TitleFilter : null
             });
 
             if (processCount > 0)
@@ -375,9 +325,9 @@ namespace BarRaider.WindowsMover
             }
             else if (processCount == 0 && !tmrRetryProcess.Enabled)
             {
-                if (!Int32.TryParse(settings.RetryAttempts, out retryAttempts))
+                if (!Int32.TryParse(Settings.RetryAttempts, out retryAttempts))
                 {
-                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid RetryAttempts: {settings.RetryAttempts}");
+                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid RetryAttempts: {Settings.RetryAttempts}");
                     return;
                 }
                 tmrRetryProcess.Start();
@@ -386,24 +336,24 @@ namespace BarRaider.WindowsMover
 
         private async Task FetchWindowLocation()
         {
-            if (string.IsNullOrEmpty(settings.ApplicationName))
+            if (string.IsNullOrEmpty(Settings.ApplicationName))
             {
                 Logger.Instance.LogMessage(TracingLevel.WARN, $"FetchWindowLocation called with no application selected");
                 await Connection.ShowAlert();
                 return;
             }
             Logger.Instance.LogMessage(TracingLevel.INFO, $"FetchWindowLocation called");
-            var rect = WindowPosition.GetWindowPostion(settings.ApplicationName);
+            var rect = WindowPosition.GetWindowPostion(Settings.ApplicationName);
             if (!rect.IsEmpty)
             {
                 Logger.Instance.LogMessage(TracingLevel.DEBUG, $"Rect is X: {rect.Top} Height: {rect.Bottom} Y: {rect.Left} Width: {rect.Right}");
-                settings.XPosition = rect.Left.ToString();
-                settings.YPosition = rect.Top.ToString();
-                settings.Height = rect.Height.ToString();
-                settings.Width = rect.Width.ToString();
+                Settings.XPosition = rect.Left.ToString();
+                Settings.YPosition = rect.Top.ToString();
+                Settings.Height = rect.Height.ToString();
+                Settings.Width = rect.Width.ToString();
 
                 // Reset to first screen
-                settings.Screen = null;
+                Settings.Screen = null;
                 PopulateScreens();
                 await SaveSettings();
             }
@@ -445,27 +395,27 @@ namespace BarRaider.WindowsMover
 
         private void CheckBackwardsCompability()
         {
-            if (String.IsNullOrEmpty(settings.Screen))
+            if (String.IsNullOrEmpty(Settings.Screen))
             {
                 return;
             }
 
-            string[] uniqueValue = settings.Screen.Split(Constants.UNIQUE_VALUE_DELIMITER);
+            string[] uniqueValue = Settings.Screen.Split(Constants.UNIQUE_VALUE_DELIMITER);
             if (uniqueValue.Length == 1)
             {
-                Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability found old value of {settings.Screen}");
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability found old value of {Settings.Screen}");
                 var monitors = MonitorManager.Instance.GetAllMonitors();
                 foreach (var monitor in monitors)
                 {
-                    if (monitor.DeviceName == settings.Screen)
+                    if (monitor.DeviceName == Settings.Screen)
                     {
-                        Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability replacing old value of {settings.Screen} with {monitor.UniqueValue}");
-                        settings.Screen = monitor.UniqueValue;
+                        Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability replacing old value of {Settings.Screen} with {monitor.UniqueValue}");
+                        Settings.Screen = monitor.UniqueValue;
                         return;
                     }
                 }
-                Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability failed for old value of {settings.Screen}, clearing value");
-                settings.Screen = String.Empty;
+                Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability failed for old value of {Settings.Screen}, clearing value");
+                Settings.Screen = String.Empty;
                 SaveSettings();
             }
         }
