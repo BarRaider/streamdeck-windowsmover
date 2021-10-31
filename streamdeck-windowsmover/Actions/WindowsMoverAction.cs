@@ -6,7 +6,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,6 +18,8 @@ namespace BarRaider.WindowsMover
     [PluginActionId("com.barraider.windowsmover")]
     public class WindowsMoverAction : WindowsActionBase
     {
+        private string WINDOWS_MOVER_RUNNER_EXENAME = "WindowsMoverRunner.exe";
+        private string WINDOWS_MOVER_RUNNER_CONFIG = "WindowsMoverRunner.cfg";
         private class PluginSettings : PluginSettingsBase
         {
             public static PluginSettings CreateDefaultSettings()
@@ -40,7 +45,8 @@ namespace BarRaider.WindowsMover
                     LocationFilter = String.Empty,
                     ShouldFilterTitle = false,
                     TitleFilter = String.Empty,
-                    RetryAttempts = "12"
+                    RetryAttempts = "12",
+                    MoveAdminWindow = false
                 };
 
                 return instance;
@@ -84,6 +90,9 @@ namespace BarRaider.WindowsMover
 
             [JsonProperty(PropertyName = "screenFriendlyName")]
             public bool ScreenFriendlyName { get; set; }
+
+            [JsonProperty(PropertyName = "moveAdminWindow")]
+            public bool MoveAdminWindow { get; set; }
         }
 
         #region Private Members
@@ -132,7 +141,7 @@ namespace BarRaider.WindowsMover
 
             PopulateApplications();
             PopulateScreens();
-            SaveSettings();
+            InitializeSettings();
         }
 
         public override void Dispose()
@@ -172,14 +181,7 @@ namespace BarRaider.WindowsMover
                 PopulateScreens();
             }
 
-
-            // Make sure TopmostWindow is set, if I choose the OnlyTopmost setting
-            if (Settings.OnlyTopmost && !Settings.TopmostWindow)
-            {
-                Settings.TopmostWindow = true;
-            }
-
-            SaveSettings();
+            InitializeSettings();
         }
 
         public override void ReceivedGlobalSettings(ReceivedGlobalSettingsPayload payload) { }
@@ -189,6 +191,28 @@ namespace BarRaider.WindowsMover
         protected override Task SaveSettings()
         {
             return Connection.SetSettingsAsync(JObject.FromObject(Settings));
+        }
+
+        private void InitializeSettings()
+        {
+            // Make sure TopmostWindow is set, if I choose the OnlyTopmost setting
+            if (Settings.OnlyTopmost && !Settings.TopmostWindow)
+            {
+                Settings.TopmostWindow = true;
+            }
+
+            if (Settings.MoveAdminWindow)
+            {
+                Settings.RetryAttempts = "0";
+            }
+
+            if (!Int32.TryParse(Settings.RetryAttempts, out retryAttempts))
+            {
+                Settings.RetryAttempts = "0";
+                retryAttempts = 0;
+            }
+
+            SaveSettings();
         }
 
         private void PopulateScreens()
@@ -217,6 +241,9 @@ namespace BarRaider.WindowsMover
             }
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Populated {Settings.Screens.Count} screens");
         }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
 
         private async Task MoveApplication()
         {
@@ -298,39 +325,47 @@ namespace BarRaider.WindowsMover
                 windowResize = WindowResize.OnlyTopmost;
             }
 
-            Screen screen = MonitorManager.Instance.GetScreenFromUniqueValue(Settings.Screen);
-            if (screen == null)
+            string screenDeviceName = MonitorManager.Instance.GetScreenDeviceNameFromUniqueValue(Settings.Screen);
+            if (screenDeviceName == null)
             {
                 Logger.Instance.LogMessage(TracingLevel.ERROR, $"Could not find screen {Settings.Screen}");
                 await Connection.ShowAlert();
                 return;
             }
 
-            var processCount = WindowPosition.MoveProcess(new MoveProcessSettings()
+            var processSettings = new MoveProcessSettings()
             {
-                AppSpecific = Settings.AppSpecific,
+                ForegroundHandle = Settings.AppSpecific ? 0 : (int) GetForegroundWindow(),
                 Name = Settings.ApplicationName,
-                DestinationScreen = screen,
+                DestinationScreenDeviceName = screenDeviceName,
                 Position = new System.Drawing.Point(xPosition, yPosition),
                 WindowResize = windowResize,
                 WindowSize = windowSize,
                 MakeTopmost = Settings.TopmostWindow,
                 LocationFilter = Settings.ShouldFilterLocation ? Settings.LocationFilter : null,
                 TitleFilter = Settings.ShouldFilterTitle ? Settings.TitleFilter : null
-            });
+            };
 
-            if (processCount > 0)
+            int processCount = 0;
+            if (Settings.MoveAdminWindow)
+            {
+                LaunchWindowsMoverRunner(processSettings);
+            }
+            else
+            {
+                processCount = WindowPosition.MoveProcess(processSettings);
+            }
+
+            if (processCount > 0 || Settings.MoveAdminWindow)
             {
                 tmrRetryProcess.Stop();
             }
-            else if (processCount == 0 && !tmrRetryProcess.Enabled)
+            else if (!Settings.MoveAdminWindow && processCount == 0 && !tmrRetryProcess.Enabled)
             {
-                if (!Int32.TryParse(Settings.RetryAttempts, out retryAttempts))
+                if (retryAttempts > 0)
                 {
-                    Logger.Instance.LogMessage(TracingLevel.WARN, $"Invalid RetryAttempts: {Settings.RetryAttempts}");
-                    return;
+                    tmrRetryProcess.Start();
                 }
-                tmrRetryProcess.Start();
             }
         }
 
@@ -417,6 +452,32 @@ namespace BarRaider.WindowsMover
                 Logger.Instance.LogMessage(TracingLevel.INFO, $"CheckBackwardsCompability failed for old value of {Settings.Screen}, clearing value");
                 Settings.Screen = String.Empty;
                 SaveSettings();
+            }
+        }
+
+        private void LaunchWindowsMoverRunner(MoveProcessSettings processSettings)
+        {
+            try
+            {
+                // Prepare the process to run
+                ProcessStartInfo start = new ProcessStartInfo();
+                // Enter in the command line arguments, everything you would enter after the executable name itself
+                string output = JsonConvert.SerializeObject(processSettings);
+                File.WriteAllText(WINDOWS_MOVER_RUNNER_CONFIG, output);
+
+                // Enter the executable to run, including the complete path
+                start.FileName = WINDOWS_MOVER_RUNNER_EXENAME;
+                // Do you want to show a console window?
+                start.Verb = "runas";
+
+                // Launch the app
+                Process.Start(start);
+            }
+            catch (Exception ex)
+            {
+
+                Logger.Instance.LogMessage(TracingLevel.ERROR, $"{this.GetType()} LaunchWindowsMoverRunner Exception: {ex}");
+                Connection.ShowAlert();
             }
         }
 
