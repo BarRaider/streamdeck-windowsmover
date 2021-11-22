@@ -32,6 +32,13 @@
                 </div>
             </div>
         </div>
+        <div type="checkbox" class="sdpi-item">
+            <div class="sdpi-item-label">Admin</div>
+            <div class="sdpi-item-value">
+                <input id="moveAdminWindow" type="checkbox" value="" class="sdProperty sdCheckbox" oninput="setSettings()">
+                <label for="moveAdminWindow" class="sdpi-item-label"><span></span>App is running as administrator</label>
+            </div>
+        </div>
         <div id="dvAppSpecific">
             <div class="sdpi-item" id="dvApplications">
                 <div class="sdpi-item-label">App Name</div>
@@ -138,7 +145,7 @@
             <input class="sdpi-item-value sdProperty" placeholder="24" value="" pattern="^[0-9]*$" id="retryAttempts" oninput="setSettings()">
         </div>
         <details class="message">
-            <summary>Will retry every 5s this many times if process is not loaded.</summary>
+            <summary>Will retry every 5s this many times if process is not loaded.  Not supported when moving Admin apps</summary>
         </details>
     </div>
 </body>

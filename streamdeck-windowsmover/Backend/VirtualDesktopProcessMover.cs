@@ -1,10 +1,10 @@
 ﻿using BarRaider.SdTools;
+using BarRaiderVirtualDesktop.VirtualDesktop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VirtualDesktop;
 
 namespace BarRaider.WindowsMover.Backend
 {
@@ -27,14 +27,14 @@ namespace BarRaider.WindowsMover.Backend
             try
             {
                 // Check if the virtual desktop exists
-                int id = Desktop.SearchDesktop(settings.VirtualDesktopName);
+                int id = VirtualDesktopManager.Instance.SearchDesktop(settings.VirtualDesktopName);
                 if (id < 0)
                 {
                     Logger.Instance.LogMessage(TracingLevel.INFO, $"Virtual desktop with name {settings.VirtualDesktopName} does not exist");
                     return 0;
                 }
 
-                var desktop = Desktop.FromIndex(id);
+                var desktop = VirtualDesktopManager.Instance.FromIndex(id);
                 if (desktop == null)
                 {
                     Logger.Instance.LogMessage(TracingLevel.INFO, $"Failed to retrieve Virtual Desktop with id {id}");

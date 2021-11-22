@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BarRaider.WindowsMover.Internal;
 
 namespace BarRaider.WindowsMover.MonitorWrapper
 {
@@ -60,7 +61,7 @@ namespace BarRaider.WindowsMover.MonitorWrapper
             return monitors;
         }
 
-        public Screen GetScreenFromUniqueValue(string uniqueValue)
+        public string GetScreenDeviceNameFromUniqueValue(string uniqueValue)
         {
             if (string.IsNullOrEmpty(uniqueValue))
             {
@@ -82,7 +83,7 @@ namespace BarRaider.WindowsMover.MonitorWrapper
                 if (monitor != null)
                 {
                     Logger.Instance.LogMessage(TracingLevel.INFO, $"Found monitor based on unique friendly name");
-                    return GetScreenByDeviceName(monitor.DeviceName);
+                    return monitor.DeviceName;
                 }
             }
 
@@ -92,7 +93,7 @@ namespace BarRaider.WindowsMover.MonitorWrapper
                 if (monitor != null)
                 {
                     Logger.Instance.LogMessage(TracingLevel.INFO, $"Found monitor based on unique serial");
-                    return GetScreenByDeviceName(monitor.DeviceName);
+                    return monitor.DeviceName;
                 }
             }
 
@@ -102,7 +103,7 @@ namespace BarRaider.WindowsMover.MonitorWrapper
                 if (monitor != null)
                 {
                     Logger.Instance.LogMessage(TracingLevel.INFO, $"Found monitor based on unique instance name");
-                    return GetScreenByDeviceName(monitor.DeviceName);
+                    return monitor.DeviceName;
                 }
             }
 
@@ -176,16 +177,6 @@ namespace BarRaider.WindowsMover.MonitorWrapper
             {
                 Logger.Instance.LogMessage(TracingLevel.ERROR, $"RefreshMonitors exception {ex}");
             }
-        }
-
-        private Screen GetScreenByDeviceName(string deviceName)
-        {
-            var screen = Screen.AllScreens.FirstOrDefault(s => s.DeviceName == deviceName);
-            if (screen == null)
-            {
-                Logger.Instance.LogMessage(TracingLevel.WARN, $"Failed to find screen based on deviceName: {deviceName}");
-            }
-            return screen;
         }
 
         #endregion

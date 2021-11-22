@@ -148,9 +148,6 @@ namespace BarRaider.WindowsMover.Internal
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
         public static int MoveProcess(MoveProcessSettings settings)
         {
             if (settings == null)
@@ -174,9 +171,9 @@ namespace BarRaider.WindowsMover.Internal
             }
 
             Logger.Instance.LogMessage(TracingLevel.INFO, $"Changing window position for: {settings}");
-            if (!settings.AppSpecific)
+            if (settings.ForegroundHandle > 0)
             {
-                ManipulateWindow(GetForegroundWindow(), settings, width, height, flags);
+                ManipulateWindow(new IntPtr(settings.ForegroundHandle), settings, width, height, flags);
                 return 1;
             }
             else
@@ -229,11 +226,18 @@ namespace BarRaider.WindowsMover.Internal
                 ShowWindow(windowHandle, ShowWindowEnum.SHOWNORMAL);
             }
 
+            Screen screen = ScreenFinder.FromDeviceName(settings.DestinationScreenDeviceName);
+            if (screen == null)
+            {
+                Logger.Instance.LogMessage(TracingLevel.WARN, $"ScreenFinder failed to find screen:  {settings.DestinationScreenDeviceName}");
+                return;
+            }
+
             // Do not change window position or location in the "OnlyTopmost" setting is set
             if (settings.WindowResize != WindowResize.OnlyTopmost)
             {
                 // Resize and move window
-                SetWindowPos(windowHandle, new IntPtr(0), settings.DestinationScreen.WorkingArea.X + settings.Position.X, settings.DestinationScreen.WorkingArea.Y + settings.Position.Y, width, height, flags);
+                SetWindowPos(windowHandle, new IntPtr(0), screen.WorkingArea.X + settings.Position.X, screen.WorkingArea.Y + settings.Position.Y, width, height, flags);
             }
 
             if (settings.WindowResize == WindowResize.Maximize)
@@ -324,6 +328,10 @@ namespace BarRaider.WindowsMover.Internal
         static readonly uint LSFW_UNLOCK = 2;
 
         static readonly int ASFW_ANY = -1; // by MSDN
+
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
 
         private static void TryForceForegroundWindow(IntPtr hWnd)
         {

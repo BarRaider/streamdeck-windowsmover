@@ -3,6 +3,7 @@ using BarRaider.WindowsMover.Backend;
 using BarRaider.WindowsMover.Internal;
 using BarRaider.WindowsMover.MonitorWrapper;
 using BarRaider.WindowsMover.Wrappers;
+using BarRaiderVirtualDesktop.VirtualDesktop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,7 +12,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VirtualDesktop;
 
 namespace BarRaider.WindowsMover
 {
@@ -274,16 +274,16 @@ namespace BarRaider.WindowsMover
                 bool shouldPin = Settings.ModePin;
                 if (Settings.ModePinToggle)
                 {
-                    shouldPin = !Desktop.IsApplicationPinned(hwnd);
+                    shouldPin = !VirtualDesktopManager.Instance.IsApplicationPinned(hwnd);
                 }
 
                 if (shouldPin)
                 {
-                    Desktop.PinApplication(hwnd);
+                    VirtualDesktopManager.Instance.PinApplication(hwnd);
                 }
                 else
                 {
-                    Desktop.UnpinApplication(hwnd);
+                    VirtualDesktopManager.Instance.UnpinApplication(hwnd);
                 }
             }
             catch (Exception ex)
