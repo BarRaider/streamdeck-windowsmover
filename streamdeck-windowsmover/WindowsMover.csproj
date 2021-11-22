@@ -45,7 +45,7 @@
       <HintPath>..\..\..\DotNet\StreamDeck\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\..\..\DotNet\StreamDeck\packages\NLog.4.7.10\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\..\..\DotNet\StreamDeck\packages\NLog.4.7.12\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="streamdeck-client-csharp, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\DotNet\StreamDeck\packages\streamdeck-client-csharp.4.3.0\lib\netstandard2.0\streamdeck-client-csharp.dll</HintPath>
@@ -57,8 +57,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\..\DotNet\StreamDeck\packages\System.Drawing.Common.5.0.2\lib\net461\System.Drawing.Common.dll</HintPath>
+    <Reference Include="System.Drawing.Common, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\..\DotNet\StreamDeck\packages\System.Drawing.Common.6.0.0\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
@@ -79,11 +79,11 @@
     <Compile Include="Actions\VirtualDesktopMoverAction.cs" />
     <Compile Include="Backend\VirtualDesktopProcessMover.cs" />
     <Compile Include="Backend\VirtualDesktopProcessMoverSettings.cs" />
+    <Compile Include="Internal\ScreenFinder.cs" />
     <Compile Include="MonitorWrapper\AggregatedMonitorInfo.cs" />
     <Compile Include="MonitorWrapper\Constants.cs" />
     <Compile Include="MonitorWrapper\MonitorManager.cs" />
     <Compile Include="MonitorWrapper\WMIMonitorInfo.cs" />
-    <Compile Include="Backend\VirtualDesktop.cs" />
     <Compile Include="Wrappers\EnumerableExtension.cs" />
     <Compile Include="MonitorWrapper\MonitorFriendly.cs" />
     <Compile Include="MonitorWrapper\MonitorInfo.cs" />
@@ -99,6 +99,10 @@
     <Compile Include="Wrappers\WindowSize.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\WindowsMoverRunner\bin\Release\WindowsMoverRunner.exe.config">
+      <Link>WindowsMoverRunner.exe.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config" />
     <None Include="manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -106,6 +110,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\WindowsMoverRunner\bin\Release\WindowsMoverRunner.exe">
+      <Link>WindowsMoverRunner.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\categoryIcon%402x.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -148,6 +156,12 @@
     <Content Include="PropertyInspector\WindowsMover.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\DotNet\StreamDeck\BarRaiderVirtualDesktop\BarRaiderVirtualDesktop.csproj">
+      <Project>{ECEE3065-57BA-475B-B709-2E8FD35AE2E8}</Project>
+      <Name>BarRaiderVirtualDesktop</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

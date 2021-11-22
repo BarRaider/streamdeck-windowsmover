@@ -3,6 +3,7 @@ using BarRaider.WindowsMover.Backend;
 using BarRaider.WindowsMover.Internal;
 using BarRaider.WindowsMover.MonitorWrapper;
 using BarRaider.WindowsMover.Wrappers;
+using BarRaiderVirtualDesktop.VirtualDesktop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -10,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VirtualDesktop;
 
 namespace BarRaider.WindowsMover
 {
@@ -221,9 +221,9 @@ namespace BarRaider.WindowsMover
             Settings.Desktops = new List<VirtualDesktopInfo>();
             try
             {
-                for (int currDesktop = 0; currDesktop < Desktop.Count; currDesktop++)
+                for (int currDesktop = 0; currDesktop < VirtualDesktopManager.Instance.Count(); currDesktop++)
                 {
-                    Settings.Desktops.Add(new VirtualDesktopInfo() { Name = Desktop.DesktopNameFromIndex(currDesktop) });
+                    Settings.Desktops.Add(new VirtualDesktopInfo() { Name = VirtualDesktopManager.Instance.DesktopNameFromIndex(currDesktop) });
                 }
             }
             catch (Exception ex)
