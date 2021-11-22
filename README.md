@@ -4,6 +4,11 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v2.4
+- **Windows 11 Support** - All Virtual Desktop features (Pin/Unpin app, Move app across Virtual Desktops) should now work on both Win10 and Win11.
+- 🆕 Support for moving/resizing **Apps running as administrator** 
+      - Enabling the new `App is running as administrator` checkbox will elevate the permissions and allow you to control those apps too!
+
 ## New in v2.2
 - :new: ***VIRTUAL DESKTOP SUPPORT***: 
     - New `Virtual Desktop Mover` action allows moving apps across Virtual Desktops. 
