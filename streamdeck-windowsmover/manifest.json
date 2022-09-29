@@ -51,7 +51,7 @@
   "Name": "Windows Mover & Resizer",
   "Icon": "Images/pluginIcon",
   "URL": "https://BarRaider.com/",
-  "Version": "2.4",
+  "Version": "2.4.1",
   "CodePath": "com.barraider.windowsmover",
   "Category": "Windows Mover [BarRaider]",
   "CategoryIcon": "Images/categoryIcon",
@@ -63,6 +63,6 @@
   ],
   "SDKVersion": 2,
   "Software": {
-    "MinimumVersion": "4.9"
+    "MinimumVersion": "5.3"
   }
 }
