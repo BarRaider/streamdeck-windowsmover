@@ -4,6 +4,9 @@ Allows you to control the position and size of application windows on your Windo
 
 **Author's website and contact information:** [https://barraider.com](https://barraider.com)
 
+## New in v2.6
+- Added `Virtual Desktop` support for new Windows 11 (23H2) version
+
 ## New in v2.5
 - Added `Virtual Desktop` support for new Windows 11 (22H2) version
 

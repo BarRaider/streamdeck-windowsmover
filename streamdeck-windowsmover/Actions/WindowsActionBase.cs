@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace BarRaider.WindowsMover
 {
-    public class WindowsActionBase : PluginBase
+    public class WindowsActionBase : KeypadBase
     {
         protected class PluginSettingsBase
         {

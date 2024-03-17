@@ -1,4 +1,5 @@
 ﻿using BarRaider.SdTools;
+using BarRaider.WindowsMover.Backend;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace BarRaider.WindowsMover
             // Uncomment this line of code to allow for debugging
             //while (!System.Diagnostics.Debugger.IsAttached) { System.Threading.Thread.Sleep(100); }
             
-            SDWrapper.Run(args);
+            SDWrapper.Run(args, new UpdateHandler());
         }
     }
 }
